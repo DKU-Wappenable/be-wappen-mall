@@ -35,3 +35,79 @@ out/
 
 ### VS Code ###
 .vscode/
+
+*.jar
+*.war
+*.zip
+*.tar
+*.gz
+*.bz2
+*.rar
+
+.lock
+*.lock
+*.lock.lock
+*.lock.lock.lock
+*.lock.lock.lock.lock
+*.lock.lock.lock.lock.lock
+*.lock.lock.lock.lock.lock.lock
+*.lock.lock.lock.lock.lock.lock.lock
+
+*.log
+*.log.log
+*.log.log.log
+*.log.log.log.log
+*.log.log.log.log.log
+*.log.log.log.log.log.log
+*.log.log.log.log.log.log.log
+
+*.lck
+*.lck.lck
+*.lck.lck.lck
+*.lck.lck.lck.lck
+*.lck.lck.lck.lck.lck
+*.lck.lck.lck.lck.lck.lck
+*.lck.lck.lck.lck.lck.lck.lck
+
+# 환경변수
+.env
+
+# Gradle User Home 캐시
++.gradle-home/
+
+# Gradle 캐시 및 빌드 출력
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Eclipse
+.project
+.classpath
+.settings/
+
+# VS Code
+.vscode/
+
+# 로그
+*.log
+
+# 시스템
+.DS_Store
+Thumbs.db
+*.so
+*.ok
+*.bin
+
+
+
+*.cmd
+*.ps1
+*.ps2
+*.ps3
+

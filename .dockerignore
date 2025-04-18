@@ -1,0 +1,6 @@
+# be-wappen-mall/.dockerignore
+# 빌드 캐시·출력물 무시
+.gradle
+.gradle-home
+build
+
