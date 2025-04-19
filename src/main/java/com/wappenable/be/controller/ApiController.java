@@ -10,6 +10,11 @@ public class ApiController {
     // 루트 경로("/") 요청 시 "API Server" 문자열을 반환
     @GetMapping("/")
     public String home() {
-        return "API 1234567890 Server";
+        return "updated API Server plz really?";
+    }
+
+    @GetMapping("/test")
+    public String test(){
+        return "API TEST No~~~ PLZ";
     }
 } 
