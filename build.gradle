@@ -2,6 +2,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.4.4'
 	id 'io.spring.dependency-management' version '1.1.7'
+	id 'jacoco' // Unit·Integration Test 커버리지 80 % 이상 확인하기 위한 커버리지 테스트 도구
 }
 
 group = 'com.wappenable'
@@ -34,6 +35,8 @@ dependencies {
 	testImplementation 'org.springframework.security:spring-security-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	runtimeOnly 'mysql:mysql-connector-java:8.0.33'
+	// 테스트용 H2 데이터베이스 추가
+    runtimeOnly 'com.h2database:h2'
 }
 
 tasks.named('test') {
@@ -45,5 +48,24 @@ tasks.register("buildAndReload") {
 	dependsOn classes
     doLast {
         file("${projectDir}/.restart").text = "${System.currentTimeMillis()}"
+    }
+}
+
+// Unit·Integration Test 커버리지 80 % 이상 확인하기 위한 커버리지 테스트 도구
+jacoco {
+    toolVersion = "0.8.11" // 최신 버전 사용
+}
+
+test {
+    useJUnitPlatform()
+    finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required = false
+        csv.required = false
+        html.outputLocation = layout.buildDirectory.dir('jacocoHtml')
     }
 }
