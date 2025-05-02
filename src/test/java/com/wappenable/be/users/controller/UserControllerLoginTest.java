@@ -1,0 +1,114 @@
+package com.wappenable.be.users.controller;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.wappenable.be.users.dto.LoginRequest;
+import com.wappenable.be.users.entity.Role;
+import com.wappenable.be.users.entity.User;
+import com.wappenable.be.users.repository.UserRepository;
+
+import lombok.RequiredArgsConstructor;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@AutoConfigureMockMvc
+@Transactional
+@SpringBootTest
+class UserControllerLoginTest {
+
+    @Autowired private MockMvc mockMvc;
+    @Autowired private ObjectMapper objectMapper;
+    @Autowired private UserRepository userRepository;
+    @Autowired private PasswordEncoder passwordEncoder;
+
+    @BeforeEach
+    void setup() {
+        User user = User.builder()
+                .email("login@example.com")
+                .nickname("로그인유저")
+                .passwordHash(passwordEncoder.encode("validPass123!"))
+                .role(Role.USER)
+                .createdAt(LocalDateTime.now())
+                .build();
+        userRepository.save(user);
+    }
+
+    @Test
+    @DisplayName("로그인 성공 - accessToken과 refreshToken 반환")
+    void login_success() throws Exception {
+        LoginRequest request = new LoginRequest("login@example.com", "validPass123!");
+
+        mockMvc.perform(post("/api/users/login")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.accessToken").exists())
+            .andExpect(jsonPath("$.refreshToken").exists());
+    }
+
+    @Test
+    @DisplayName("로그인 실패 - 이메일 없음")
+    void login_fail_emailNotFound() throws Exception {
+        LoginRequest request = new LoginRequest("notfound@example.com", "validPass123!");
+
+        mockMvc.perform(post("/api/users/login")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.error").value("이메일이 존재하지 않습니다."));
+    }
+
+    @Test
+    @DisplayName("로그인 실패 - 비밀번호 틀림")
+    void login_fail_wrongPassword() throws Exception {
+        LoginRequest request = new LoginRequest("login@example.com", "wrongPassword!");
+
+        mockMvc.perform(post("/api/users/login")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.error").value("비밀번호가 일치하지 않습니다."));
+    }
+
+    @Test
+    @DisplayName("로그인 실패 - 이메일 비어 있음")
+    void login_fail_blankEmail() throws Exception {
+        LoginRequest request = new LoginRequest("", "somePassword");
+
+        mockMvc.perform(post("/api/users/login")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("로그인 실패 - 비밀번호 비어 있음")
+    void login_fail_blankPassword() throws Exception {
+        LoginRequest request = new LoginRequest("login@example.com", "");
+
+        mockMvc.perform(post("/api/users/login")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isBadRequest());
+    }
+}
