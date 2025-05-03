@@ -1,0 +1,46 @@
+package com.wappenable.be.users.util;
+
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
+
+
+import javax.crypto.SecretKey;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+import java.util.Base64;
+import java.util.Date;
+
+@Component
+public class JwtUtil {
+
+    @Value("${jwt.secret}")
+    private String secret;
+
+    private final long ACCESS_TOKEN_EXP = 1000 * 60 * 60 * 24 * 7;     // 7일
+    private final long REFRESH_TOKEN_EXP = 1000 * 60 * 60 * 24 * 14;   // 14일
+
+    private SecretKey getSigningKey() {
+        byte[] keyBytes = Base64.getDecoder().decode(secret);
+        return Keys.hmacShaKeyFor(keyBytes);
+    }
+
+    public String generateAccessToken(String subject) {
+        return generateToken(subject, ACCESS_TOKEN_EXP);
+    }
+
+    public String generateRefreshToken(String subject) {
+        return generateToken(subject, REFRESH_TOKEN_EXP);
+    }
+
+    private String generateToken(String subject, long expirationTimeMs) {
+        Date now = new Date();
+        return Jwts.builder()
+                .setSubject(subject)
+                .setIssuedAt(now)
+                .setExpiration(new Date(now.getTime() + expirationTimeMs))
+                .signWith(SignatureAlgorithm.HS256, getSigningKey())
+                .compact();
+    }
+}
