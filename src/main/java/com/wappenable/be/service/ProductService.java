@@ -7,6 +7,8 @@ import com.wappenable.be.infrastructure.S3Uploader;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -80,6 +82,17 @@ public class ProductService {
         }
 
         productRepository.delete(product);
+    }
+
+    // 상품 조회
+    public Page<Product> getProduct(String keyword, String sortBy, String direction, Pageable pageable) {
+        if (keyword == null) keyword = "";
+        return productRepository.searchByConditions(keyword.toLowerCase(),sortBy, direction, pageable);
+    }
+
+    public Product getProductDetail(Long id) {
+        return productRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("상품이 존재하지 않습니다."));
     }
 
     // ============================== 배포용 (현재 주석 처리 상태) ==============================
