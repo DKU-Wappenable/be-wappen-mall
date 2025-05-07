@@ -22,13 +22,13 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(unique = true)
     private String email;
 
     @Column(nullable = false)
     private String nickname;
 
-    @Column(nullable = false, name = "password_hash")
+    @Column(name = "password_hash", nullable = true) // 소셜 계정을 위해 null이어도 허가
     private String passwordHash;
 
     @Enumerated(EnumType.STRING) // DB 저장 시 String으로 저장

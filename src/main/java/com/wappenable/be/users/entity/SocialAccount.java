@@ -1,5 +1,8 @@
 package com.wappenable.be.users.entity;
 
+
+import java.time.LocalDateTime;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -15,9 +18,13 @@ public class SocialAccount {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String provider; // 예: google, kakao, naver
+    @Enumerated(EnumType.STRING)
+    private AuthProvider provider; // 예: google, kakao, naver
 
-    private String providerId; // 소셜 고유 ID
+    private String providerUserId; // 소셜 고유 ID ex. "103847239847238472394"
+
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
