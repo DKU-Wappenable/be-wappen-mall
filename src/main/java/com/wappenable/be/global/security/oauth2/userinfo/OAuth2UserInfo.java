@@ -1,4 +1,4 @@
-package com.wappenable.be.users.oauth2;
+package com.wappenable.be.global.security.oauth2.userinfo;
 
 import java.util.Map;
 

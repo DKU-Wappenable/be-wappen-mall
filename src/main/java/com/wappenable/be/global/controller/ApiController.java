@@ -1,4 +1,4 @@
-package com.wappenable.be.controller;
+package com.wappenable.be.global.controller;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;

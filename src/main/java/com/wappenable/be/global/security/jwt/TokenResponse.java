@@ -1,4 +1,4 @@
-package com.wappenable.be.users.dto;
+package com.wappenable.be.global.security.jwt;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

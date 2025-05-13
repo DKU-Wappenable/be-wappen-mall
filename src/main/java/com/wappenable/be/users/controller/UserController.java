@@ -7,9 +7,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.wappenable.be.users.dto.LoginRequest;
-import com.wappenable.be.users.dto.TokenResponse;
-import com.wappenable.be.users.dto.SignupRequest;
+import com.wappenable.be.global.security.jwt.TokenResponse;
+import com.wappenable.be.users.dto.request.LoginRequest;
+import com.wappenable.be.users.dto.request.SignupRequest;
 import com.wappenable.be.users.service.UserService;
 
 import jakarta.validation.Valid;
@@ -36,4 +36,7 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
     
+    // TODO: 로그아웃 추가
+    // TODO: 아이디/비밀번호 찾기
+    // TODO: 회원 탈퇴
 } 

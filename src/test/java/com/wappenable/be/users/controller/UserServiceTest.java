@@ -8,9 +8,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import com.wappenable.be.users.dto.SignupRequest;
+import com.wappenable.be.global.exception.CustomException;
+import com.wappenable.be.users.dto.request.SignupRequest;
 import com.wappenable.be.users.entity.User;
-import com.wappenable.be.users.exception.CustomException;
 import com.wappenable.be.users.repository.UserRepository;
 import com.wappenable.be.users.service.UserService;
 

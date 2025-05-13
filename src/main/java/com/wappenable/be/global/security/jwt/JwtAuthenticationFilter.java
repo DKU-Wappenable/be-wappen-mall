@@ -1,8 +1,8 @@
-package com.wappenable.be.users.filter;
+package com.wappenable.be.global.security.jwt;
 
 import com.wappenable.be.users.entity.User;
 import com.wappenable.be.users.repository.UserRepository;
-import com.wappenable.be.users.util.JwtUtil;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -49,21 +49,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = parseToken(request);
         if (token != null && jwtUtil.validateToken(token)) {
             String email = jwtUtil.extractEmail(token);
+            log.debug("Extracted email from JWT: {}", email);  // 토큰에서 추출된 이메일 확인용 로그
 
             Optional<User> userOptional = userRepository.findByEmail(email);
-            if (userOptional.isPresent()) {
+            if (userOptional.isEmpty()) {
+                log.warn("No user found with email: {}", email);  // 사용자 조회 실패 로그
+            } else {
                 User user = userOptional.get();
                 UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
                         .username(user.getEmail())
-                        .password("")
-                        .authorities(user.getRole().toGrantedAuthority())
+                        .password("") // 비밀번호는 필요 없음
+                        .authorities(List.of(user.getRole().toGrantedAuthority()))
                         .build();
-
+        
                 UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
+        
                 SecurityContextHolder.getContext().setAuthentication(authToken);
+                log.debug("SecurityContext에 인증 정보 설정 완료: {}", user.getEmail());
             }
         }
 
