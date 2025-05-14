@@ -2,6 +2,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.4.4'
 	id 'io.spring.dependency-management' version '1.1.7'
+	id 'jacoco' // Unit·Integration Test 커버리지 80 % 이상 확인하기 위한 커버리지 테스트 도구
 }
 
 group = 'com.wappenable'
@@ -28,13 +29,25 @@ dependencies {
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.boot:spring-boot-starter-validation' // 유효성 검증
+	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+	implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'
+	implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client' // oauth2
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
+	
+    testCompileOnly 'org.projectlombok:lombok:1.18.30' // 테스트에서도 Lombok 사용 가능하게 설정
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.30'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
+	testImplementation 'io.jsonwebtoken:jjwt-api:0.11.5'// 테스트용 jwt
+	testRuntimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5' // 테스트용 jwt
+    testRuntimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5' // 테스트용 jwt
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	runtimeOnly 'mysql:mysql-connector-java:8.0.33'
 	implementation 'com.amazonaws:aws-java-sdk-s3:1.12.673'
+    runtimeOnly 'com.h2database:h2' // 테스트용 H2 데이터베이스 추가
 }
 
 tasks.named('test') {
@@ -46,5 +59,24 @@ tasks.register("buildAndReload") {
 	dependsOn classes
     doLast {
         file("${projectDir}/.restart").text = "${System.currentTimeMillis()}"
+    }
+}
+
+// Unit·Integration Test 커버리지 80 % 이상 확인하기 위한 커버리지 테스트 도구
+jacoco {
+    toolVersion = "0.8.11" // 최신 버전 사용
+}
+
+test {
+    useJUnitPlatform()
+    finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required = false
+        csv.required = false
+        html.outputLocation = layout.buildDirectory.dir('jacocoHtml')
     }
 }
