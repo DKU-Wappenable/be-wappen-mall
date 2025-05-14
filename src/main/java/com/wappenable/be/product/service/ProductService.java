@@ -1,9 +1,9 @@
-package com.wappenable.be.service;
+package com.wappenable.be.product.service;
 
-import com.wappenable.be.domain.Product;
-import com.wappenable.be.repository.ProductRepository;
-import com.wappenable.be.infrastructure.LocalFileUploader;
-import com.wappenable.be.infrastructure.S3Uploader;
+import com.wappenable.be.product.domain.Product;
+import com.wappenable.be.product.repository.ProductRepository;
+import com.wappenable.be.product.infrastructure.LocalFileUploader;
+import com.wappenable.be.product.infrastructure.S3Uploader;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;

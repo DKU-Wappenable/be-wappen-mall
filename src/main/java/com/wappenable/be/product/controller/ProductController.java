@@ -1,8 +1,8 @@
-package com.wappenable.be.controller;
+package com.wappenable.be.product.controller;
 
-import com.wappenable.be.domain.Product;
+import com.wappenable.be.product.domain.Product;
 import com.wappenable.be.security.CustomUserDetails;
-import com.wappenable.be.service.ProductService;
+import com.wappenable.be.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

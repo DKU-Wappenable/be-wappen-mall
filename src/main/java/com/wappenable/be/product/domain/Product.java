@@ -1,4 +1,4 @@
-package com.wappenable.be.domain;
+package com.wappenable.be.product.domain;
 
 import jakarta.persistence.*;
 import lombok.*;

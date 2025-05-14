@@ -1,4 +1,4 @@
-package com.wappenable.be.infrastructure;
+package com.wappenable.be.product.infrastructure;
 
 import org.springframework.web.multipart.MultipartFile;
 
