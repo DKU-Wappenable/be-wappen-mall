@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 // import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 @RestController
@@ -63,6 +65,21 @@ public class ProductController {
         return ResponseEntity.ok("상품이 삭제 되었습니다.");
     }
 
+    // 상품 조회 api
+    @GetMapping
+    public ResponseEntity<Page<Product>> getProduct(
+        @RequestParam(required = false) String keyword,
+        @RequestParam(required = false, defaultValue = "createdAt") String sortBy,
+        @RequestParam(required = false, defaultValue = "desc") String direction,
+        Pageable pageable
+     ) {
+        return ResponseEntity.ok(productService.getProduct(keyword,sortBy, direction,pageable));
+     }
+
+     @GetMapping("/{id}")
+     public ResponseEntity<Product> getProductDetail(@PathVariable Long id){
+        return ResponseEntity.ok(productService.getProductDetail(id));
+     }
     // ============================== 배포용 (주석처리 상태) ==============================
     /*
     @PostMapping
@@ -104,6 +121,10 @@ public class ProductController {
         productService.deleteProduct(id, userDetails.getId());
         return ResponseEntity.ok("상품이 삭제되었습니다.");
     }
+         @GetMapping("/{id}")
+     public ResponseEntity<ProductResponse> getProductDetail(@PathVariable Long id){
+        return ResponseEntity.ok(productService.getProductDetail(id));
+     }
     */
 
 }
