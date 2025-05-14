@@ -4,15 +4,17 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import com.wappenable.be.users.dto.LoginRequest;
-import com.wappenable.be.users.dto.TokenResponse;
-import com.wappenable.be.users.dto.SignupRequest;
+import com.wappenable.be.global.exception.CustomException;
+import com.wappenable.be.global.security.jwt.JwtUtil;
+import com.wappenable.be.global.security.jwt.TokenResponse;
+import com.wappenable.be.users.dto.request.LoginRequest;
+import com.wappenable.be.users.dto.request.SignupRequest;
 import com.wappenable.be.users.entity.Role;
 import com.wappenable.be.users.entity.User;
-import com.wappenable.be.users.exception.CustomException;
 import com.wappenable.be.users.repository.UserRepository;
-import com.wappenable.be.users.util.JwtUtil;
+
 import java.time.LocalDateTime;
 
 @Service
@@ -52,9 +54,25 @@ public class UserService {
             throw new CustomException("비밀번호가 일치하지 않습니다.", HttpStatus.UNAUTHORIZED);
         }
 
-        String accessToken = jwtUtil.generateAccessToken(user.getEmail());
-        String refreshToken = jwtUtil.generateRefreshToken(user.getEmail());
+        String accessToken = jwtUtil.generateAccessToken(user.getEmail(), user.getRole().name());
+        String refreshToken = jwtUtil.generateRefreshToken(user.getEmail(), user.getRole().name());
 
         return new TokenResponse(accessToken, refreshToken);
+    }
+
+    @Transactional
+    public void updateUserRole(Long userId, String roleName) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new CustomException("사용자 없음",HttpStatus.BAD_REQUEST));
+
+        try {
+            Role newRole = Role.valueOf(roleName.toUpperCase());
+            user.setRole(newRole);
+        } catch (IllegalArgumentException e) {
+            throw new CustomException("잘못된 역할 값입니다", HttpStatus.BAD_REQUEST);
+        }
+
+        // TODO: Audit 로그 기록 등
+        // @LastModifiedDate, @LastModifiedBy -> 자동 변경 감지 기록용 
     }
 }

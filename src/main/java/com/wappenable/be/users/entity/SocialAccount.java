@@ -3,6 +3,8 @@ package com.wappenable.be.users.entity;
 
 import java.time.LocalDateTime;
 
+import com.wappenable.be.global.security.oauth2.domain.AuthProvider;
+
 import jakarta.persistence.*;
 import lombok.*;
 

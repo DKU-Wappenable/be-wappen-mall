@@ -1,6 +1,4 @@
-package com.wappenable.be.common; // ⭐ 패키지 따로 빼줘야 해.
-
-import com.wappenable.be.users.exception.CustomException;
+package com.wappenable.be.global.exception; // 패키지 따로 빼줘야 해.
 
 import java.util.HashMap;
 import java.util.Map;

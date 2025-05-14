@@ -1,11 +1,11 @@
-package com.wappenable.be.users.service;
+package com.wappenable.be.global.security.oauth2.service;
 
-import com.wappenable.be.users.entity.AuthProvider;
+import com.wappenable.be.global.security.oauth2.domain.AuthProvider;
+import com.wappenable.be.global.security.oauth2.userinfo.OAuth2UserInfo;
+import com.wappenable.be.global.security.oauth2.userinfo.OAuth2UserInfoFactory;
 import com.wappenable.be.users.entity.Role;
 import com.wappenable.be.users.entity.SocialAccount;
 import com.wappenable.be.users.entity.User;
-import com.wappenable.be.users.oauth2.OAuth2UserInfo;
-import com.wappenable.be.users.oauth2.OAuth2UserInfoFactory;
 import com.wappenable.be.users.repository.SocialAccountRepository;
 import com.wappenable.be.users.repository.UserRepository;
 
@@ -41,7 +41,6 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest request) throws OAuth2AuthenticationException {
-        // OAuth2User oAuth2User = super.loadUser(request);
 
         OAuth2User oAuth2User;
         try {
@@ -52,10 +51,6 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         }
 
         String provider = request.getClientRegistration().getRegistrationId();
-        String userNameAttributeName = request.getClientRegistration()
-                .getProviderDetails()
-                .getUserInfoEndpoint()
-                .getUserNameAttributeName();
 
         OAuth2UserInfo userInfo = OAuth2UserInfoFactory.getOAuth2UserInfo(provider, oAuth2User.getAttributes());
 
@@ -63,7 +58,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         String email = userInfo.getEmail();
         String nickname = userInfo.getNickname();
         
-        // 카카오애서 이메일 받아오지 않기 때문에 임시 이메일 생성
+        // 카카오에서 이메일 받아오지 않기 때문에 임시 이메일 생성, 구글, 네이버는 이메일 받아옴
+        // 나중에 이메일 받아오지 않는 provider 늘어나면 계속하여 코드 변경이 필요해진다.
         if (email == null || email.isBlank()) {
             email = "kakao_" + LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE)
             + "_" + UUID.randomUUID().toString().substring(0, 8)
@@ -73,7 +69,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         log.info("[OAuth2] provider={}, providerUserId={}, email={}, nickname={}", provider, providerUserId, email, nickname);
 
-        // 사용자 조회 or 생성
+        // 사용자 조회 or 생성 , 기본 Role = USER
         User user = userRepository.findByEmail(email).orElseGet(() -> {
             User newUser = User.builder()
                     .email(finalEmail)
@@ -99,7 +95,10 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         return new DefaultOAuth2User(
                 Collections.singleton(user.getRole().toGrantedAuthority()),
                 userInfo.getAttributes(),
-                userNameAttributeName
+                "email"
+                // userNameAttributeName
         );
+
+        // TODO: 소셜 로그인 연결 해제, 재가입 흐름
     }
 } 

@@ -1,4 +1,4 @@
-package com.wappenable.be.users.exception;
+package com.wappenable.be.global.exception;
 
 
 import org.springframework.http.HttpStatus;

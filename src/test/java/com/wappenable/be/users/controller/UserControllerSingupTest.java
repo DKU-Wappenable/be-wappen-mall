@@ -1,7 +1,7 @@
 package com.wappenable.be.users.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.wappenable.be.users.dto.SignupRequest;
+import com.wappenable.be.users.dto.request.SignupRequest;
 import com.wappenable.be.users.entity.Role;
 import com.wappenable.be.users.entity.User;
 import com.wappenable.be.users.repository.UserRepository;
