@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,7 +25,8 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Configuration
-@EnableMethodSecurity(prePostEnabled = true)
+@EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true) // TODO : @PreAuthorized 등 사용가능하다. , (prePostEnabled = true) 는 뭐임?
 public class SecurityConfig {
     
     private final CustomOAuth2UserService customOAuth2UserService;
@@ -42,11 +44,13 @@ public class SecurityConfig {
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable()) // csrf.disable() -> 이거 나중에 지워야하나?
+            .csrf(csrf -> csrf.disable()) // [x]: csrf.disable() -> REST API에서는 CSRF 비활성화가 일반적, 대신 JWT, OAuth2 등 토큰 기반 인증 방식 사용
             // 현재 인증 방식 : JWT, 세션 저장이 필요 없는데 Spring Security는 기본적으로 세션에 인증 정보를 자동 저장하려고 시도함
             .sessionManagement(session -> session
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)  
             )
+            // TODO : Role 권한마다 접속 가능한 경로 지정
+            // TODO : .requestMatchers("/login/**", "/oauth2/**", "/login/oauth2/**", "/error").authenticated() 이렇게 되어야 하는거 아닌지? error는 잘 모르겠네
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/api/users/signup","/api/users/login",
                 "/login/**", "/oauth2/**", "/login/oauth2/**", "/error").permitAll() // 누구나 접근 가능

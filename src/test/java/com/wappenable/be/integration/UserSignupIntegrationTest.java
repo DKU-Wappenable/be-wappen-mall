@@ -1,4 +1,4 @@
-package com.wappenable.be.users.controller;
+package com.wappenable.be.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wappenable.be.users.dto.request.SignupRequest;
@@ -25,7 +25,7 @@ import java.time.LocalDateTime;
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
-class UserControllerSingupTest {
+class UserSignupIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;

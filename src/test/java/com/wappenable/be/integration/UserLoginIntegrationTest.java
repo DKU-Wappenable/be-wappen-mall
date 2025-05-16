@@ -1,4 +1,4 @@
-package com.wappenable.be.users.controller;
+package com.wappenable.be.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wappenable.be.users.dto.request.LoginRequest;
@@ -29,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Transactional
 @SpringBootTest
-class UserControllerLoginTest {
+class UserLoginIntegrationTest {
 
     @Autowired private MockMvc mockMvc;
     @Autowired private ObjectMapper objectMapper;

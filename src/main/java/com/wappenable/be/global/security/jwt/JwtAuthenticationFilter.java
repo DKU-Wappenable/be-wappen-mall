@@ -55,6 +55,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (userOptional.isEmpty()) {
                 log.warn("No user found with email: {}", email);  // 사용자 조회 실패 로그
             } else {
+                // TODO 아래 user가 com.wappenable.be.users.entity.User 인가 아니면 org.springframework.security.core.userdetails.User. 인가?
                 User user = userOptional.get();
                 UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
                         .username(user.getEmail())

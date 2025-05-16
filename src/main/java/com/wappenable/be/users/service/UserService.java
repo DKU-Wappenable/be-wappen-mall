@@ -11,11 +11,13 @@ import com.wappenable.be.global.security.jwt.JwtUtil;
 import com.wappenable.be.global.security.jwt.TokenResponse;
 import com.wappenable.be.users.dto.request.LoginRequest;
 import com.wappenable.be.users.dto.request.SignupRequest;
+import com.wappenable.be.users.dto.response.UserListDto;
 import com.wappenable.be.users.entity.Role;
 import com.wappenable.be.users.entity.User;
 import com.wappenable.be.users.repository.UserRepository;
 
-import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +27,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
+    @Transactional
     public void signup(SignupRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new CustomException("중복된 이메일입니다", HttpStatus.CONFLICT);
@@ -40,7 +43,7 @@ public class UserService {
                 .nickname(request.getNickname())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .role(Role.valueOf(request.getRole().toUpperCase()))
-                .createdAt(LocalDateTime.now())
+                // .createdAt(LocalDateTime.now()) 생략 가능 : @CreatedAt
                 .build();
 
         userRepository.save(user);
@@ -71,8 +74,20 @@ public class UserService {
         } catch (IllegalArgumentException e) {
             throw new CustomException("잘못된 역할 값입니다", HttpStatus.BAD_REQUEST);
         }
-
-        // TODO: Audit 로그 기록 등
-        // @LastModifiedDate, @LastModifiedBy -> 자동 변경 감지 기록용 
     }
+
+    // 전체 사용자 조회
+    @Transactional(readOnly = true)
+    public List<UserListDto> getAllUsers() {
+        return userRepository.findAll().stream()
+                .map(user -> new UserListDto(
+                        user.getId(),
+                        user.getEmail(),
+                        user.getNickname(),
+                        user.getRole().name()
+                ))
+                .collect(Collectors.toList());
+        }
+
+
 }
