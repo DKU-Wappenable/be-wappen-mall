@@ -35,13 +35,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         "/api/users/login"
     );
 
+    private boolean isNoAuthRequired(String uri) {
+        return NO_AUTH_URLS.stream().anyMatch(uri::startsWith);
+    }
+
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
         String uri = request.getRequestURI();
-        if (NO_AUTH_URLS.contains(uri)) {
+        if (isNoAuthRequired(uri)) {
             filterChain.doFilter(request, response);
             return;
         }

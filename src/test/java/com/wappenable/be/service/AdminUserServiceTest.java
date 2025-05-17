@@ -1,6 +1,6 @@
 package com.wappenable.be.service;
 
-import com.wappenable.be.users.dto.request.SignupRequest;
+import com.wappenable.be.users.dto.request.SignupRequestDto;
 import com.wappenable.be.users.entity.Role;
 import com.wappenable.be.users.entity.User;
 import com.wappenable.be.users.repository.UserRepository;
@@ -28,15 +28,15 @@ class AdminUserServiceTest {
     @Mock private UserRepository userRepository;
     @InjectMocks private AdminUserService adminUserService;
     @Mock private PasswordEncoder passwordEncoder;
-    private SignupRequest signupRequest;
+    private SignupRequestDto signupRequest;
 
     @BeforeEach
     void setup() {
-        signupRequest = new SignupRequest();
+        signupRequest = new SignupRequestDto();
         signupRequest.setEmail("test@example.com");
         signupRequest.setNickname("테스트유저");
         signupRequest.setPassword("password123");
-        signupRequest.setRole("USER");
+        signupRequest.setRole(Role.USER);
     }
 
     @Test
@@ -53,30 +53,11 @@ class AdminUserServiceTest {
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
 
         // when
-        adminUserService.updateUserRole(userId, "ADMIN");
+        adminUserService.updateUserRole(userId, Role.ADMIN);
 
         // then
         verify(userRepository).findById(userId);
         assertThat(user.getRole()).isEqualTo(Role.ADMIN);
-    }
-
-    @Test
-    void 역할_변경_실패_잘못된_역할() {
-        // given
-        Long userId = 1L;
-        User user = User.builder()
-                .id(userId)
-                .email("test@wappen.com")
-                .nickname("테스트")
-                .role(Role.USER)
-                .build();
-
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-
-        // when & then
-        assertThatThrownBy(() -> adminUserService.updateUserRole(userId, "INVALID_ROLE"))
-                .isInstanceOf(CustomException.class)
-                .hasMessage("잘못된 역할 값입니다");
     }
 
     @Test
@@ -86,7 +67,7 @@ class AdminUserServiceTest {
         when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
         // when & then
-        assertThatThrownBy(() -> adminUserService.updateUserRole(userId, "ADMIN"))
+        assertThatThrownBy(() -> adminUserService.updateUserRole(userId, Role.ADMIN))
                 .isInstanceOf(CustomException.class)
                 .hasMessage("사용자 없음");
     }
@@ -119,8 +100,8 @@ class AdminUserServiceTest {
         // then
         assertThat(result).hasSize(2);
         assertThat(result.get(0).getEmail()).isEqualTo("user1@example.com");
-        assertThat(result.get(0).getRole()).isEqualTo("USER");
+        assertThat(result.get(0).getRole()).isEqualTo(Role.USER);
         assertThat(result.get(1).getNickname()).isEqualTo("관리자");
-        assertThat(result.get(1).getRole()).isEqualTo("ADMIN");
+        assertThat(result.get(1).getRole()).isEqualTo(Role.ADMIN);
     }
 }

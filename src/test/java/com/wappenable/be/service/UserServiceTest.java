@@ -9,19 +9,16 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.wappenable.be.global.exception.CustomException;
-import com.wappenable.be.users.dto.request.SignupRequest;
+import com.wappenable.be.users.dto.request.SignupRequestDto;
 import com.wappenable.be.users.entity.Role;
 import com.wappenable.be.users.entity.User;
 import com.wappenable.be.users.repository.UserRepository;
 import com.wappenable.be.users.service.UserService;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-import java.util.List;
-import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -35,15 +32,16 @@ class UserServiceTest {
     @InjectMocks
     private UserService userService;
 
-    private SignupRequest signupRequest;
+    private SignupRequestDto signupRequest;
 
     @BeforeEach
     void setup() {
-        signupRequest = new SignupRequest();
+        signupRequest = new SignupRequestDto();
         signupRequest.setEmail("test@example.com");
         signupRequest.setNickname("테스트유저");
         signupRequest.setPassword("password123");
-        signupRequest.setRole("USER");
+        signupRequest.setConfirmPassword("password123");
+        signupRequest.setRole(Role.USER);
     }
 
     @Test
@@ -57,6 +55,19 @@ class UserServiceTest {
 
         // then
         verify(userRepository, times(1)).save(any(User.class));
+    }
+
+    @Test
+    void 회원가입_실패_비밀번호_불일치() {
+        // given
+        signupRequest.setConfirmPassword("differentPassword");
+
+        // when & then
+        assertThatThrownBy(() -> userService.signup(signupRequest))
+            .isInstanceOf(CustomException.class)
+            .hasMessage("비밀번호와 비밀번호 확인이 일치하지 않습니다");
+
+        verify(userRepository, never()).save(any(User.class));
     }
 
     @Test

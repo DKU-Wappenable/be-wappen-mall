@@ -14,6 +14,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +26,10 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @SpringBootTest
+@TestPropertySource(properties = {
+    "admin.email=test-admin@wappen.com",
+    "admin.password=testpass123"
+})
 @AutoConfigureMockMvc
 @Transactional
 class AdminUserApiIntegrationTest {
@@ -54,7 +59,7 @@ class AdminUserApiIntegrationTest {
     @DisplayName("역할 변경 성공")
     @WithMockUser(roles = "ADMIN")
     void updateUserRole_success() throws Exception {
-        RoleUpdateRequestDto dto = new RoleUpdateRequestDto("ADMIN");
+        RoleUpdateRequestDto dto = new RoleUpdateRequestDto(Role.ADMIN);
 
         mockMvc.perform(put("/api/admin/users/" + testUserId + "/role")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -66,7 +71,7 @@ class AdminUserApiIntegrationTest {
     @DisplayName("존재하지 않는 사용자 ID → 400 BadRequest")
     @WithMockUser(roles = "ADMIN")
     void updateUserRole_notFound() throws Exception {
-        RoleUpdateRequestDto dto = new RoleUpdateRequestDto("ADMIN");
+        RoleUpdateRequestDto dto = new RoleUpdateRequestDto(Role.ADMIN);
 
         mockMvc.perform(put("/api/admin/users/999999/role")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -78,11 +83,15 @@ class AdminUserApiIntegrationTest {
     @DisplayName("존재하지 않는 역할 문자열 → 400 BadRequest")
     @WithMockUser(roles = "ADMIN")
     void updateUserRole_invalidRole() throws Exception {
-        RoleUpdateRequestDto dto = new RoleUpdateRequestDto("NOT_EXIST");
+        String invalidJson = """
+            {
+                "role": "NOT_EXIST"
+            }
+        """;
 
         mockMvc.perform(put("/api/admin/users/" + testUserId + "/role")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(dto)))
+                        .content(invalidJson))
                 .andExpect(status().isBadRequest());
     }
 

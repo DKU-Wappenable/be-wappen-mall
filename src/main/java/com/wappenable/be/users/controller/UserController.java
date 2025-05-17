@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.wappenable.be.global.security.jwt.TokenResponse;
-import com.wappenable.be.users.dto.request.LoginRequest;
-import com.wappenable.be.users.dto.request.SignupRequest;
+import com.wappenable.be.users.dto.request.LoginRequestDto;
+import com.wappenable.be.users.dto.request.SignupRequestDto;
 import com.wappenable.be.users.service.UserService;
 
 import jakarta.validation.Valid;
@@ -23,14 +23,14 @@ public class UserController {
 
     // 회원가입
     @PostMapping("/signup")
-    public ResponseEntity<?> signup(@Valid @RequestBody SignupRequest request) {
+    public ResponseEntity<?> signup(@Valid @RequestBody SignupRequestDto request) {
         userService.signup(request);
         return ResponseEntity.ok("회원가입 성공");
     }
 
     // 로그인
     @PostMapping("/login")
-    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequestDto request) {
         TokenResponse response = userService.login(request);    
         return ResponseEntity.ok(response);
     }

@@ -1,5 +1,7 @@
 package com.wappenable.be.users.dto.request;
 
+import com.wappenable.be.users.entity.Role;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -12,7 +14,7 @@ import lombok.Setter;
 @Getter @Setter
 @NoArgsConstructor // JSON 역직렬화를 위해 필요
 @AllArgsConstructor // 테스트나 내부에서 생성자 주입할 때 사용
-public class SignupRequest {
+public class SignupRequestDto {
     
     @NotBlank(message = "이메일은 필수입니다.")
     @Email(message = "이메일 형식이 올바르지 않습니다.")
@@ -30,8 +32,9 @@ public class SignupRequest {
     private String password;
     
     // TODO : 비밀번호 재확인용
-    
+    @NotBlank(message = "비밀번호 확인은 필수입니다.")
+    private String confirmPassword;
 
-    private String role; // enum이지만 처음엔 문자열로 받아도 됨
+    private Role role;
 }
 

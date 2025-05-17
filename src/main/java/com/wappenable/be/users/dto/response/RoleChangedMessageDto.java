@@ -1,5 +1,7 @@
 package com.wappenable.be.users.dto.response;
 
+import com.wappenable.be.users.entity.Role;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -7,8 +9,8 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class RoleChangedMessage {
+public class RoleChangedMessageDto {
     private Long userId;
-    private String newRole;
+    private Role newRole;
     private String message;
 }

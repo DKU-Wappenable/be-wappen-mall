@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor // JSON 역직렬화를 위해 필요
 @AllArgsConstructor
-public class LoginRequest {
+public class LoginRequestDto {
 
     @NotBlank(message = "이메일을 입력해주세요")
     @Email(message = "이메일 형식이 올바르지 않습니다")

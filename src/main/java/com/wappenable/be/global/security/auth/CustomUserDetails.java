@@ -19,7 +19,7 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singleton(user.getRole()::name); // 단일 권한
+        return Collections.singleton(user.getRole().toGrantedAuthority());
     }
 
     @Override

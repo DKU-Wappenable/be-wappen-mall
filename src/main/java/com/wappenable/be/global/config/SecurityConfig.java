@@ -49,20 +49,13 @@ public class SecurityConfig {
             .sessionManagement(session -> session
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)  
             )
-            // TODO : Role 권한마다 접속 가능한 경로 지정
-            // TODO : .requestMatchers("/login/**", "/oauth2/**", "/login/oauth2/**", "/error").authenticated() 이렇게 되어야 하는거 아닌지? error는 잘 모르겠네
+            // [x] : Role 권한마다 접속 가능한 경로 지정
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/api/users/signup","/api/users/login",
-                "/login/**", "/oauth2/**", "/login/oauth2/**", "/error").permitAll() // 누구나 접근 가능
-                .anyRequest().authenticated() // 나머지는 인증 요구, 권한 없으면 접근 불가
+                .requestMatchers("/", "/api/users/signup", "/api/users/login", "/oauth2/**", "/error").permitAll()
+                .requestMatchers("/api/admin/**").hasRole("ADMIN") // 내부적으로 "ROLE_ADMIN" 검사
+                .requestMatchers("/api/users/**").hasAnyRole("USER", "DESIGNER", "SHOP_OWNER", "ADMIN") // [ ] : 현재 DESIGNER,SHOP_OWNER에 관한 기능 존재하지 않음.
+                .anyRequest().authenticated()
             )
-            // .oauth2Login(oauth2 -> oauth2
-            //     .userInfoEndpoint(userInfo -> 
-            //         userInfo.userService(customOAuth2UserService)
-            //     )
-            //     .successHandler(oAuth2LoginSuccessHandler) // 성공 핸들러 등록
-            //     .failureHandler(oAuth2LoginFailureHandler) // 실패 핸들러 등록
-            // )
             .exceptionHandling(exception -> exception
                 .authenticationEntryPoint((request, response, authException) -> {
                     // 인증 실패 (401)

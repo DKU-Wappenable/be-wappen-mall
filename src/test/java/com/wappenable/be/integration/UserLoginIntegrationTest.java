@@ -1,7 +1,7 @@
 package com.wappenable.be.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.wappenable.be.users.dto.request.LoginRequest;
+import com.wappenable.be.users.dto.request.LoginRequestDto;
 import com.wappenable.be.users.entity.Role;
 import com.wappenable.be.users.entity.User;
 import com.wappenable.be.users.repository.UserRepository;
@@ -16,6 +16,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +28,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @AutoConfigureMockMvc
+@TestPropertySource(properties = {
+    "admin.email=test-admin@wappen.com",
+    "admin.password=testpass123"
+})
 @Transactional
 @SpringBootTest
 class UserLoginIntegrationTest {
@@ -51,7 +56,7 @@ class UserLoginIntegrationTest {
     @Test
     @DisplayName("로그인 성공 - accessToken과 refreshToken 반환")
     void login_success() throws Exception {
-        LoginRequest request = new LoginRequest("login@example.com", "validPass123!");
+        LoginRequestDto request = new LoginRequestDto("login@example.com", "validPass123!");
 
         mockMvc.perform(post("/api/users/login")
                 .with(csrf())
@@ -65,7 +70,7 @@ class UserLoginIntegrationTest {
     @Test
     @DisplayName("로그인 실패 - 이메일 없음")
     void login_fail_emailNotFound() throws Exception {
-        LoginRequest request = new LoginRequest("notfound@example.com", "validPass123!");
+        LoginRequestDto request = new LoginRequestDto("notfound@example.com", "validPass123!");
 
         mockMvc.perform(post("/api/users/login")
                 .with(csrf())
@@ -78,7 +83,7 @@ class UserLoginIntegrationTest {
     @Test
     @DisplayName("로그인 실패 - 비밀번호 틀림")
     void login_fail_wrongPassword() throws Exception {
-        LoginRequest request = new LoginRequest("login@example.com", "wrongPassword!");
+        LoginRequestDto request = new LoginRequestDto("login@example.com", "wrongPassword!");
 
         mockMvc.perform(post("/api/users/login")
                 .with(csrf())
@@ -91,7 +96,7 @@ class UserLoginIntegrationTest {
     @Test
     @DisplayName("로그인 실패 - 이메일 비어 있음")
     void login_fail_blankEmail() throws Exception {
-        LoginRequest request = new LoginRequest("", "somePassword");
+        LoginRequestDto request = new LoginRequestDto("", "somePassword");
 
         mockMvc.perform(post("/api/users/login")
                 .with(csrf())
@@ -103,7 +108,7 @@ class UserLoginIntegrationTest {
     @Test
     @DisplayName("로그인 실패 - 비밀번호 비어 있음")
     void login_fail_blankPassword() throws Exception {
-        LoginRequest request = new LoginRequest("login@example.com", "");
+        LoginRequestDto request = new LoginRequestDto("login@example.com", "");
 
         mockMvc.perform(post("/api/users/login")
                 .with(csrf())

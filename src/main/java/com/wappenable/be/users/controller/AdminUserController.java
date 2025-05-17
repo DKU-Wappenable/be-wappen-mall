@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.wappenable.be.users.dto.request.RoleUpdateRequestDto;
-import com.wappenable.be.users.dto.response.RoleChangedMessage;
+import com.wappenable.be.users.dto.response.RoleChangedMessageDto;
 import com.wappenable.be.users.dto.response.UserListDto;
 import com.wappenable.be.users.entity.Role;
 import com.wappenable.be.users.service.AdminUserService;
@@ -47,7 +47,7 @@ public class AdminUserController {
 
         // WebSocket 실시간 알림 전송
         messagingTemplate.convertAndSend("/topic/users/role",
-                new RoleChangedMessage(id, req.getRole(), "권한이 변경되었습니다"));
+                new RoleChangedMessageDto(id, req.getRole(), "권한이 변경되었습니다"));
         return ResponseEntity.ok().build();
 
     }

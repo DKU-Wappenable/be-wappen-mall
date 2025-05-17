@@ -1,7 +1,7 @@
 package com.wappenable.be.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.wappenable.be.users.dto.request.SignupRequest;
+import com.wappenable.be.users.dto.request.SignupRequestDto;
 import com.wappenable.be.users.entity.Role;
 import com.wappenable.be.users.entity.User;
 import com.wappenable.be.users.repository.UserRepository;
@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +24,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.time.LocalDateTime;
 
 @SpringBootTest
+@TestPropertySource(properties = {
+    "admin.email=test-admin@wappen.com",
+    "admin.password=testpass123"
+})
 @AutoConfigureMockMvc
 @Transactional
 class UserSignupIntegrationTest {
@@ -39,11 +44,12 @@ class UserSignupIntegrationTest {
     @Test
     @DisplayName("회원가입 성공 - DB 저장 확인")
     void signup_success() throws Exception {
-        SignupRequest request = new SignupRequest();
+        SignupRequestDto request = new SignupRequestDto();
         request.setEmail("test@example.com");
         request.setNickname("tester");
         request.setPassword("Newpass123!");
-        request.setRole("USER");
+        request.setConfirmPassword("Newpass123!");
+        request.setRole(Role.USER);
 
         mockMvc.perform(post("/api/users/signup")
                 .with(csrf())
@@ -69,11 +75,12 @@ class UserSignupIntegrationTest {
                 .build();
         userRepository.save(existingUser);
 
-        SignupRequest request = new SignupRequest();
+        SignupRequestDto request = new SignupRequestDto();
         request.setEmail("duplicate@example.com");
         request.setNickname("newdup");
         request.setPassword("Newpass123!");
-        request.setRole("USER");
+        request.setConfirmPassword("Newpass123!");
+        request.setRole(Role.USER);
 
         mockMvc.perform(post("/api/users/signup")
                 .with(csrf())
@@ -86,5 +93,23 @@ class UserSignupIntegrationTest {
             .filter(u -> u.getEmail().equals("duplicate@example.com"))
             .count();
         assertThat(count).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("회원가입 실패 - 비밀번호와 비밀번호 확인 불일치")
+    void signup_passwordMismatch() throws Exception {
+        SignupRequestDto request = new SignupRequestDto();
+        request.setEmail("mismatch@example.com");
+        request.setNickname("MismatchUser");
+        request.setPassword("Newpass123!");
+        request.setConfirmPassword("Wrongpass123!"); // 비밀번호 확인 불일치
+        request.setRole(Role.USER);
+
+        mockMvc.perform(post("/api/users/signup")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andDo(print())
+            .andExpect(status().isBadRequest()); // UserService에서 HttpStatus.BAD_REQUEST 반환
     }
 }

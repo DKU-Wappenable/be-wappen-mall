@@ -21,16 +21,11 @@ public class AdminUserService {
     private final UserRepository userRepository;
 
     @Transactional
-    public void updateUserRole(Long userId, String roleName) {
+    public void updateUserRole(Long userId, Role newRole) {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new CustomException("사용자 없음", HttpStatus.BAD_REQUEST));
 
-        try {
-            Role newRole = Role.valueOf(roleName.toUpperCase());
-            user.setRole(newRole);
-        } catch (IllegalArgumentException e) {
-            throw new CustomException("잘못된 역할 값입니다", HttpStatus.BAD_REQUEST);
-        }
+        user.setRole(newRole);
     }
 
     @Transactional(readOnly = true)
@@ -40,7 +35,7 @@ public class AdminUserService {
                         user.getId(),
                         user.getEmail(),
                         user.getNickname(),
-                        user.getRole().name()
+                        user.getRole()
                 ))
                 .collect(Collectors.toList());
     }
