@@ -1,7 +1,7 @@
 package com.wappenable.be.users.controller;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,7 +14,6 @@ import com.wappenable.be.users.service.UserService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-// 회원가입 컨트롤러
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/users")
@@ -36,9 +35,16 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
     
-    // TODO: 로그아웃 추가
+    // TODO: 로그아웃
+
+    // 회원탈퇴
+    @DeleteMapping
+    public ResponseEntity<?> deleteUser() {
+        userService.deleteCurrentUser();
+        return ResponseEntity.ok("회원 탈퇴 완료");
+    }
 
     // TODO: 아이디/비밀번호 찾기
     
-    // TODO: 회원 탈퇴
+
 } 

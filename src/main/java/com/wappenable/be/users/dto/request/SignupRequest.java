@@ -29,6 +29,9 @@ public class SignupRequest {
     )
     private String password;
     
+    // TODO : 비밀번호 재확인용
+    
+
     private String role; // enum이지만 처음엔 문자열로 받아도 됨
 }
 
