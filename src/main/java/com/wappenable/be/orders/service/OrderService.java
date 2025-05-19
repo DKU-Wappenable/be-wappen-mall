@@ -13,10 +13,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import jakarta.persistence.EntityNotFoundException;
-
+import java.util.List;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-
+import com.wappenable.be.orders.dto.OrderResponse;
+import com.wappenable.be.orders.dto.OrderItemResponse;
+import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -76,6 +78,43 @@ public class OrderService {
         log.info("[이메일 전송] {}번 사용자에게 주문 확인 이메일 전송됨", request.getBuyerId());
     }
 
+    // 주문 조회 
+    @Transactional(readOnly = true)
+public List<OrderResponse> getOrderDtosByUserId(Long userId) {
+    List<Order> orders = orderRepository.findAll().stream()
+        .filter(order -> order.getBuyerId().equals(userId))
+        .collect(Collectors.toList());
+
+    return orders.stream().map(this::convertToDto).collect(Collectors.toList());
+}
+
+@Transactional(readOnly = true)
+public Order getOrderById(Long orderId) {
+    return orderRepository.findById(orderId)
+        .orElseThrow(() -> new EntityNotFoundException("주문을 찾을 수 없습니다."));
+}
+
+@Transactional(readOnly = true)
+public OrderResponse convertToDto(Order order) {
+    List<OrderItemResponse> itemResponses = order.getItems().stream().map(item ->
+        OrderItemResponse.builder()
+            .productId(item.getProductId())
+            .quantity(item.getQuantity())
+            .unitPrice(item.getUnitPrice())
+            .build()
+    ).collect(Collectors.toList());
+
+    return OrderResponse.builder()
+        .orderId(order.getId())
+        .buyerId(order.getBuyerId())
+        .totalPrice(order.getTotalPrice())
+        .status(order.getStatus())
+        .orderedAt(order.getOrderedAt())
+        .deliveryAddress(order.getDeliveryAddress())
+        .deliveryRequest(order.getDeliveryRequest())
+        .items(itemResponses)
+        .build();
+    }
     // BANK로 주문시 WAITING_FOR_DEPOSIT 상태에서 PAID 상태로 바꿈 
     @Transactional
     public void confirmBankDeposit(Long orderId){

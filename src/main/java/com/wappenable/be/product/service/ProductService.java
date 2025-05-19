@@ -9,10 +9,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-
+import java.util.Map;
+import java.util.HashMap;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipEntry;
+import java.nio.charset.StandardCharsets;
 
 @Service
 @RequiredArgsConstructor
@@ -95,6 +103,87 @@ public class ProductService {
                     .orElseThrow(() -> new RuntimeException("상품이 존재하지 않습니다."));
     }
 
+    public List<Map<String, Object>> bulkUpload(MultipartFile csvFile, MultipartFile zipFile, Long sellerId) {
+        List<Map<String, Object>> logs = new ArrayList<>(); // 행별 처리 로그 저장
+        Map<String, byte[]> imageMap = extractZip(zipFile); // zip 파일을 map으로 변환
+        // csv 파일을 UTF-8로 저장해야 데이터베이스에서 한글을 읽음
+        try(BufferedReader reader = new BufferedReader(new InputStreamReader(csvFile.getInputStream(), StandardCharsets.UTF_8))) {
+            String line;
+            int row = 0;
+            while ((line = reader.readLine()) != null) {
+                row++;
+                if (row ==1 && line.contains("name,")) continue;
+
+                String[] parts = line.split(",");
+                if (parts.length < 4) {
+                    logs.add(Map.of("row",row,"success", false, "message", "열 개수 부족"));
+                    continue;
+                }
+                
+                String name = parts[0].trim();
+                int price, stock;
+                String imageName = parts[3].trim();
+
+                try{
+                    price = Integer.parseInt(parts[1].trim());
+                    stock = Integer.parseInt(parts[2].trim());
+                } catch(Exception e) {
+                    logs.add(Map.of("row",row ,"success", false , "message", "숫자 변환 오류"));
+                    continue;
+                }
+
+                try{
+                    List<String> imageUrls = new ArrayList<>();
+                    if(imageMap.containsKey(imageName)){ // ZIP에 해당 이미지가 있으면 업로드 후 URL 저장
+                        imageUrls.add(fileUploader.upload(imageName, imageMap.get(imageName)));
+                    }
+
+                    // 상품 객체 생성
+
+                Product product = Product.builder()
+                        .name(name)
+                        .price(price)
+                        .stock(stock)
+                        .images(imageUrls)
+                        .sellerId(sellerId)
+                        .createdAt(LocalDateTime.now())
+                        .updatedAt(LocalDateTime.now())
+                        .build();
+                    
+                    productRepository.save(product); // DB저장
+                    logs.add(Map.of("row", row, "success", true,"productId", product.getId(), "message", "등록 성공"));
+
+                } catch (Exception e){
+                    // 상품 등록 중 예외 발생 시
+                    logs.add(Map.of("row", row, "success", false, "message", e.getMessage()));
+                }
+            }
+        } catch(Exception e){
+            throw new RuntimeException("CSV 읽기 오류", e);
+        }
+        return logs;
+    }
+
+    // 파일 압축 해제 메소드
+    private Map<String, byte[]> extractZip(MultipartFile zipFile) {
+        Map<String, byte[]> fileMap = new HashMap<>();
+        if (zipFile == null || zipFile.isEmpty()) return fileMap; // 비어있으면 빈 맵 반환
+
+        try(ZipInputStream zis = new ZipInputStream(zipFile.getInputStream())) {
+            ZipEntry entry;
+            while((entry = zis.getNextEntry()) != null){
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                byte[] buffer = new byte[1024];
+                int len;
+                while((len = zis.read(buffer)) > 0) baos.write(buffer, 0, len);
+                fileMap.put(entry.getName(), baos.toByteArray()); // 파일명 -> 내용 저장
+            }
+        } catch(IOException e){
+             throw new RuntimeException("ZIP 해제 실패", e);
+        }
+        return fileMap;
+    }
+}
     // ============================== 배포용 (현재 주석 처리 상태) ==============================
 
     /*
@@ -147,6 +236,100 @@ public class ProductService {
 
         productRepository.delete(product);
     }
+
+    
+    // 상품 조회
+    public Page<Product> getProduct(String keyword, String sortBy, String direction, Pageable pageable) {
+        if (keyword == null) keyword = "";
+        return productRepository.searchByConditions(keyword.toLowerCase(),sortBy, direction, pageable);
+    }
+
+    public Product getProductDetail(Long id) {
+        return productRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("상품이 존재하지 않습니다."));
+    }
+
+    
+    public List<Map<String, Object>> bulkUpload(MultipartFile csvFile, MultipartFile zipFile, Long sellerId) {
+        List<Map<String, Object>> logs = new ArrayList<>(); // 행별 처리 로그 저장
+        Map<String, byte[]> imageMap = extractZip(zipFile); // zip 파일을 map으로 변환
+        // csv 파일을 UTF-8로 저장해야 데이터베이스에서 한글을 읽음
+        try(BufferedReader reader = new BufferedReader(new InputStreamReader(csvFile.getInputStream(), StandardCharsets.UTF_8))) {
+            String line;
+            int row = 0;
+            while ((line = reader.readLine()) != null) {
+                row++;
+                if (row ==1 && line.contains("name,")) continue;
+
+                String[] parts = line.split(",");
+                if (parts.length < 4) {
+                    logs.add(Map.of("row",row,"success", false, "message", "열 개수 부족"));
+                    continue;
+                }
+                
+                String name = parts[0].trim();
+                int price, stock;
+                String imageName = parts[3].trim();
+
+                try{
+                    price = Integer.parseInt(parts[1].trim());
+                    stock = Integer.parseInt(parts[2].trim());
+                } catch(Exception e) {
+                    logs.add(Map.of("row",row ,"success", false , "message", "숫자 변환 오류"));
+                    continue;
+                }
+
+                try{
+                    List<String> imageUrls = new ArrayList<>();
+                    if(imageMap.containsKey(imageName)){ // ZIP에 해당 이미지가 있으면 업로드 후 URL 저장
+                        imageUrls.add(fileUploader.upload(imageName, imageMap.get(imageName)));
+                    }
+
+                    // 상품 객체 생성
+
+                Product product = Product.builder()
+                        .name(name)
+                        .price(price)
+                        .stock(stock)
+                        .images(imageUrls)
+                        .sellerId(sellerId)
+                        .createdAt(LocalDateTime.now())
+                        .updatedAt(LocalDateTime.now())
+                        .build();
+                    
+                    productRepository.save(product); // DB저장
+                    logs.add(Map.of("row", row, "success", true,"productId", product.getId(), "message", "등록 성공"));
+
+                } catch (Exception e){
+                    // 상품 등록 중 예외 발생 시
+                    logs.add(Map.of("row", row, "success", false, "message", e.getMessage()));
+                }
+            }
+        } catch(Exception e){
+            throw new RuntimeException("CSV 읽기 오류", e);
+        }
+        return logs;
+    }
+
+    // 파일 압축 해제 메소드
+    private Map<String, byte[]> extractZip(MultipartFile zipFile) {
+        Map<String, byte[]> fileMap = new HashMap<>();
+        if (zipFile == null || zipFile.isEmpty()) return fileMap; // 비어있으면 빈 맵 반환
+
+        try(ZipInputStream zis = new ZipInputStream(zipFile.getInputStream())) {
+            ZipEntry entry;
+            while((entry = zis.getNextEntry()) != null){
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                byte[] buffer = new byte[1024];
+                int len;
+                while((len = zis.read(buffer)) > 0) baos.write(buffer, 0, len);
+                fileMap.put(entry.getName(), baos.toByteArray()); // 파일명 -> 내용 저장
+            }
+        } catch(IOException e){
+             throw new RuntimeException("ZIP 해제 실패", e);
+        }
+        return fileMap;
+    }
     */
 
-}
+

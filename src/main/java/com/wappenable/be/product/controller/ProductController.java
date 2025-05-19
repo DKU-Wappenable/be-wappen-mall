@@ -9,6 +9,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.List;  
 // import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 @RestController
@@ -76,10 +79,26 @@ public class ProductController {
         return ResponseEntity.ok(productService.getProduct(keyword,sortBy, direction,pageable));
      }
 
+     // 상품 상세 조회 
      @GetMapping("/{id}")
      public ResponseEntity<Product> getProductDetail(@PathVariable Long id){
         return ResponseEntity.ok(productService.getProductDetail(id));
      }
+
+     // 상품 대량 등록
+     @PostMapping("/bulk")
+     public ResponseEntity<?> bulkUpload(
+        @RequestParam("csvFile") MultipartFile csvFile, 
+        @RequestParam(value = "zipFile", required = false) MultipartFile zipFile,
+        @RequestParam(required = false) Long sellerId
+     ) {
+        if (sellerId == null) sellerId =1L;
+
+        List<Map<String,Object>> result = productService.bulkUpload(csvFile,zipFile,sellerId);
+        return ResponseEntity.ok(Map.of("results",result));
+     }
+
+
     // ============================== 배포용 (주석처리 상태) ==============================
     /*
     @PostMapping
@@ -124,6 +143,19 @@ public class ProductController {
          @GetMapping("/{id}")
      public ResponseEntity<ProductResponse> getProductDetail(@PathVariable Long id){
         return ResponseEntity.ok(productService.getProductDetail(id));
+     }
+
+       // 상품 대량 등록
+     @PostMapping("/bulk")
+     public ResponseEntity<?> bulkUpload(
+        @RequestParam("csvFile") MultipartFile csvFile, 
+        @RequestParam(value = "zipFile", required = false) MultipartFile zipFile,
+        @RequestParam(required = false) Long sellerId
+     ) {
+        if (sellerId == null) sellerId =1L;
+
+        List<Map<String,Object>> result = productService.bulkUpload(csvFile,zipFile,sellerId);
+        return ResponseEntity.ok(Map.of("results",result));
      }
     */
 

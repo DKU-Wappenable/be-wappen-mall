@@ -3,7 +3,6 @@ package com.wappenable.be.orders.domain;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
-
 @Entity
 @Table(name = "order_items")
 @Getter
@@ -19,6 +18,7 @@ public class OrderItem {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id")
+
     private Order order;
     private Long productId;
     private Integer quantity;
