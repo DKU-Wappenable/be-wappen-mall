@@ -25,7 +25,7 @@ import java.time.LocalDateTime;
 
 @SpringBootTest
 @TestPropertySource(properties = {
-    "admin.email=test-admin@wappen.com",
+    "admin.email=testAdmin",
     "admin.password=testpass123"
 })
 @AutoConfigureMockMvc
@@ -45,7 +45,7 @@ class UserSignupIntegrationTest {
     @DisplayName("회원가입 성공 - DB 저장 확인")
     void signup_success() throws Exception {
         SignupRequestDto request = new SignupRequestDto();
-        request.setEmail("test@example.com");
+        request.setEmail("test");
         request.setNickname("tester");
         request.setPassword("Newpass123!");
         request.setConfirmPassword("Newpass123!");
@@ -58,7 +58,7 @@ class UserSignupIntegrationTest {
             .andDo(print())
             .andExpect(status().isOk());
 
-        User savedUser = userRepository.findByEmail("test@example.com").orElse(null);
+        User savedUser = userRepository.findByEmail("test").orElse(null);
         assertThat(savedUser).isNotNull();
         assertThat(savedUser.getNickname()).isEqualTo("tester");
     }
@@ -67,7 +67,7 @@ class UserSignupIntegrationTest {
     @DisplayName("중복 이메일로 회원가입 실패 - DB 저장 안됨")
     void signup_duplicateEmail() throws Exception {
         User existingUser = User.builder()
-                .email("duplicate@example.com")
+                .email("duplicate")
                 .nickname("dup")
                 .passwordHash("password123")
                 .role(Role.USER)
@@ -76,7 +76,7 @@ class UserSignupIntegrationTest {
         userRepository.save(existingUser);
 
         SignupRequestDto request = new SignupRequestDto();
-        request.setEmail("duplicate@example.com");
+        request.setEmail("duplicate");
         request.setNickname("newdup");
         request.setPassword("Newpass123!");
         request.setConfirmPassword("Newpass123!");
@@ -90,7 +90,7 @@ class UserSignupIntegrationTest {
             .andExpect(status().isConflict());
 
         long count = userRepository.findAll().stream()
-            .filter(u -> u.getEmail().equals("duplicate@example.com"))
+            .filter(u -> u.getEmail().equals("duplicate"))
             .count();
         assertThat(count).isEqualTo(1);
     }
@@ -99,7 +99,7 @@ class UserSignupIntegrationTest {
     @DisplayName("회원가입 실패 - 비밀번호와 비밀번호 확인 불일치")
     void signup_passwordMismatch() throws Exception {
         SignupRequestDto request = new SignupRequestDto();
-        request.setEmail("mismatch@example.com");
+        request.setEmail("mismatch");
         request.setNickname("MismatchUser");
         request.setPassword("Newpass123!");
         request.setConfirmPassword("Wrongpass123!"); // 비밀번호 확인 불일치

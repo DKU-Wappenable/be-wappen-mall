@@ -28,6 +28,7 @@ public class AdminUserService {
         user.setRole(newRole);
     }
 
+    // [ ] : 이건 전체 사용자 조회이지 50명 초기 목록 렌더링이 아님
     @Transactional(readOnly = true)
     public List<UserListDto> getAllUsers() {
         return userRepository.findAll().stream()

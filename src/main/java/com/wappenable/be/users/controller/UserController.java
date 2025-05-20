@@ -45,6 +45,25 @@ public class UserController {
     }
 
     // TODO: 아이디/비밀번호 찾기
-    
+    // 아이디(이메일) 찾기
+    // @PostMapping("/find-id")
+    // public ResponseEntity<?> findEmail(@Valid @RequestBody FindEmailRequestDto request) {
+    //     String email = userService.findEmailByNicknameAndPhone(request);
+    //     return ResponseEntity.ok(email);
+    // }
+
+    // // TODO : 비밀번호 찾기 (정보 확인 단계)
+    // @PostMapping("/find-pw")
+    // public ResponseEntity<?> findPassword(@Valid @RequestBody FindPasswordRequestDto request) {
+    //     userService.verifyUserForPasswordReset(request);
+    //     return ResponseEntity.ok("사용자 인증 성공. 비밀번호를 재설정하세요.");
+    // }
+
+    // // TODO : 비밀번호 재설정
+    // @PostMapping("/reset-pw")
+    // public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordRequestDto request) {
+    //     userService.resetPassword(request);
+    //     return ResponseEntity.ok("비밀번호가 성공적으로 변경되었습니다.");
+    // }
 
 } 

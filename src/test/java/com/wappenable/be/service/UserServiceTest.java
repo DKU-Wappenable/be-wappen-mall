@@ -37,7 +37,7 @@ class UserServiceTest {
     @BeforeEach
     void setup() {
         signupRequest = new SignupRequestDto();
-        signupRequest.setEmail("test@example.com");
+        signupRequest.setEmail("testuser");
         signupRequest.setNickname("테스트유저");
         signupRequest.setPassword("password123");
         signupRequest.setConfirmPassword("password123");
@@ -78,7 +78,7 @@ class UserServiceTest {
         // when & then
         assertThatThrownBy(() -> userService.signup(signupRequest))
                 .isInstanceOf(CustomException.class)
-                .hasMessage("중복된 이메일입니다");
+                .hasMessage("이미 존재하는 아이디입니다.");
 
         verify(userRepository, never()).save(any(User.class));
     }

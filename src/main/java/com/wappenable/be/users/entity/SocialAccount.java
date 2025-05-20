@@ -24,7 +24,7 @@ public class SocialAccount {
     private AuthProvider provider; // 예: google, kakao, naver
 
     private String providerUserId; // 소셜 고유 ID ex. "103847239847238472394"
-
+    
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 

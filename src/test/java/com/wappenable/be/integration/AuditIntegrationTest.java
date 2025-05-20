@@ -26,7 +26,7 @@ import java.util.UUID;
 
 @SpringBootTest
 @TestPropertySource(properties = {
-    "admin.email=test-admin@wappen.com",
+    "admin.email=testAdmin",
     "admin.password=testpass123"
 })
 @AutoConfigureMockMvc

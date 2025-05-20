@@ -33,7 +33,7 @@ class AdminUserServiceTest {
     @BeforeEach
     void setup() {
         signupRequest = new SignupRequestDto();
-        signupRequest.setEmail("test@example.com");
+        signupRequest.setEmail("testuser");
         signupRequest.setNickname("테스트유저");
         signupRequest.setPassword("password123");
         signupRequest.setRole(Role.USER);
@@ -45,7 +45,7 @@ class AdminUserServiceTest {
         Long userId = 1L;
         User user = User.builder()
                 .id(userId)
-                .email("test@wappen.com")
+                .email("testuser")
                 .nickname("테스트")
                 .role(Role.USER)
                 .build();
@@ -78,14 +78,14 @@ class AdminUserServiceTest {
         List<User> users = List.of(
             User.builder()
                 .id(1L)
-                .email("user1@example.com")
+                .email("user1")
                 .nickname("유저1")
                 .passwordHash("encoded1")
                 .role(Role.USER)
                 .build(),
             User.builder()
                 .id(2L)
-                .email("admin@example.com")
+                .email("admin")
                 .nickname("관리자")
                 .passwordHash("encoded2")
                 .role(Role.ADMIN)
@@ -99,7 +99,7 @@ class AdminUserServiceTest {
 
         // then
         assertThat(result).hasSize(2);
-        assertThat(result.get(0).getEmail()).isEqualTo("user1@example.com");
+        assertThat(result.get(0).getEmail()).isEqualTo("user1");
         assertThat(result.get(0).getRole()).isEqualTo(Role.USER);
         assertThat(result.get(1).getNickname()).isEqualTo("관리자");
         assertThat(result.get(1).getRole()).isEqualTo(Role.ADMIN);

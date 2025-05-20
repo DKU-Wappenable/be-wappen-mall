@@ -32,7 +32,7 @@ public class UserService {
         }
         
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new CustomException("이미 존재하는 이메일입니다", HttpStatus.CONFLICT);
+            throw new CustomException("이미 존재하는 아이디입니다.", HttpStatus.CONFLICT);
         }
 
         // TODO : 일단 회원가입 시 Role 선택 필드는 없는걸로, 기본은 USER, 추후 디벨롭
@@ -51,7 +51,7 @@ public class UserService {
 
     public TokenResponse login(LoginRequestDto request) {
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new CustomException("이메일이 존재하지 않습니다.", HttpStatus.UNAUTHORIZED));
+                .orElseThrow(() -> new CustomException("아이디가 존재하지 않습니다.", HttpStatus.UNAUTHORIZED));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
             throw new CustomException("비밀번호가 일치하지 않습니다.", HttpStatus.UNAUTHORIZED);

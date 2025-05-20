@@ -21,16 +21,17 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 public class User {
-
+    // TODO : 프론트 로그인 아이디, 계정 찾기 용 이메일, 비번, 비번 재확인
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    
+    // 로그인용 id
     @Column(unique = true)
     private String email;
 
-    @Column(nullable = false)
-    private String nickname;
+    @Column(nullable = true)
+    private String nickname; // [ ] : 사용자 정의 닉네임, 소셜 로그인은 null? 프론트에 입력란 없기 때문에 일단 null 허용
 
     @Column(name = "password_hash", nullable = true) // 소셜 계정을 위해 null이어도 허가
     private String passwordHash;
