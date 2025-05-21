@@ -12,7 +12,8 @@ import com.wappenable.be.orders.domain.Order;
 public class OrderController {
 
     private final OrderService orderService;
-    // 주문 
+    // 주문
+    @PreAuthorize("hasRole('USER')") 
     @PostMapping
     public ResponseEntity<String> placeOrder(@RequestBody OrderRequest request) {
         orderService.processOrder(request);
@@ -34,6 +35,7 @@ public class OrderController {
    
     
     // 무통장 입금시 결제 상태를 대기중에서 PAID로 변경
+    @PreAuthorize("hasAnyRole('SHOP_OWNER', 'ADMIN')") 
     @PatchMapping("/{orderId}/confirm-deposit")
     public ResponseEntity<String> confirmDeposit(@PathVariable("orderId") Long orderId){
         orderService.confirmBankDeposit(orderId);
@@ -41,6 +43,7 @@ public class OrderController {
     }
 
     // 주문 취소시 주문 상태를 CANCLEED 로 변경
+    @PreAuthorize("hasAnyRole('SHOP_OWNER', 'ADMIN')") 
     @PatchMapping("/{orderId}/cancel")
     public ResponseEntity<String> cancleOrder(@PathVariable Long orderId){
         orderService.cancleOrder(orderId);
@@ -48,6 +51,7 @@ public class OrderController {
     }  
 
     // 주문 데이터를 실제로 삭제
+    @PreAuthorize("hasAnyRole('SHOP_OWNER', 'ADMIN')")
     @DeleteMapping("/{orderId}")
     public ResponseEntity<String> deleteOrder(@PathVariable Long orderId){
         orderService.deleteOrder(orderId);

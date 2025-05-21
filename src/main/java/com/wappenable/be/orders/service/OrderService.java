@@ -134,6 +134,12 @@ public OrderResponse convertToDto(Order order) {
         Order order = orderRepository.findById(orderId)
             .orElseThrow(() -> new EntityNotFoundException("주문을 찾을 수 없습니다."));
         order.setStatus("CANCELED");
+        // 재고 복구 로직 추가
+        for(OrderItem item : order.getItems()) {
+            Product product = productRepository.findById(item.getProductId())
+                .orElseThrow(() -> new EntityNotFoundException("상품이 존재하지 않습니다."));
+            product.setStock(product.getStock() + item.getQuantity());
+        }
         orderRepository.save(order);
     }
 
@@ -142,6 +148,9 @@ public OrderResponse convertToDto(Order order) {
     public void deleteOrder(Long orderId){
         if(!orderRepository.existsById(orderId)) {
             throw new EntityNotFoundException("주문을 찾을 수 없습니다.");
+        }
+        if(!order.getStatus().equals("CANCELED")){
+            throw new IllegalStateException("주문이 취소되지 않은 상태에서는 삭제할 수 없습니다.");
         }
         orderRepository.deleteById(orderId);
     }
