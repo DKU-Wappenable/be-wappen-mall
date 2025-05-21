@@ -22,6 +22,7 @@ public class ProductController {
     private final ProductService productService;
 
     // ============================== 개발용 ==============================
+    @PreAuthorize("hasAnyRole('SHOP_OWNER', 'ADMIN')") 
     @PostMapping // 상품 등록 api
     public ResponseEntity<?> createProduct( 
             @RequestParam String name,
@@ -39,6 +40,7 @@ public class ProductController {
     }
 
     // 상품 수정 api
+    @PreAuthorize("hasAnyRole('SHOP_OWNER', 'ADMIN')") 
     @PutMapping("/{id}")
     public ResponseEntity<?> updateProduct (
         @PathVariable Long id,
@@ -56,6 +58,7 @@ public class ProductController {
     }
 
     // 상품 삭제 api
+    @PreAuthorize("hasAnyRole('SHOP_OWNER', 'ADMIN')") 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteProduct(
         @PathVariable Long id,
@@ -86,6 +89,7 @@ public class ProductController {
      }
 
      // 상품 대량 등록
+     @PreAuthorize("hasAnyRole('SHOP_OWNER', 'ADMIN')") 
      @PostMapping("/bulk")
      public ResponseEntity<?> bulkUpload(
         @RequestParam("csvFile") MultipartFile csvFile, 

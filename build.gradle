@@ -33,6 +33,7 @@ dependencies {
 	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
 	implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'
 	implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client' // oauth2
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 	
@@ -46,7 +47,7 @@ dependencies {
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	runtimeOnly 'mysql:mysql-connector-java:8.0.33'
 	implementation 'com.amazonaws:aws-java-sdk-s3:1.12.673'
-    runtimeOnly 'com.h2database:h2' // 테스트용 H2 데이터베이스 추가	
+    runtimeOnly 'com.h2database:h2' // 테스트용 H2 데이터베이스 추가
 }
 
 tasks.named('test') {

@@ -111,3 +111,5 @@ Thumbs.db
 *.ps2
 *.ps3
 *.restart
+
+uploads/
