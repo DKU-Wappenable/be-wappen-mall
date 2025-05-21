@@ -1,3 +1,4 @@
+
 package com.wappenable.be.orders.dto;
 
 import lombok.Data;
@@ -11,5 +12,3 @@ public class OrderRequest {
     private String deliveryAddress;
     private String deliveryRequest;
 }
-
-
