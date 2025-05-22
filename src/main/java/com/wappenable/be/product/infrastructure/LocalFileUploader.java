@@ -1,4 +1,4 @@
-package com.wappenable.be.infrastructure;
+package com.wappenable.be.product.infrastructure;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -14,7 +14,7 @@ import java.util.UUID;
 public class LocalFileUploader implements FileUploader {
 
     private final String uploadDir = "uploads";
-
+    // 단일 상품 등록
     @Override
     public String upload(MultipartFile file) {
         try {
@@ -34,4 +34,17 @@ public class LocalFileUploader implements FileUploader {
         }
     }
 
+    // 대용량 파일 업로드 용
+    @Override
+    public String upload(String fileName, byte[] fileData) {
+        try {
+            String uniqueName = UUID.randomUUID() + "_" + fileName;
+            Path savePath = Paths.get(uploadDir, uniqueName);
+            Files.createDirectories(savePath.getParent());
+            Files.write(savePath, fileData);
+            return savePath.toString();
+        } catch (IOException e) {
+            throw new RuntimeException("파일 업로드 실패: " + fileName, e);
+        }
+    }
 }

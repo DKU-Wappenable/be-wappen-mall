@@ -1,6 +1,6 @@
-package com.wappenable.be.repository;
+package com.wappenable.be.product.repository;
 
-import com.wappenable.be.domain.Product;
+import com.wappenable.be.product.domain.Product;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

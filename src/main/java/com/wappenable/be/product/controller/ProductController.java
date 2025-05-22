@@ -1,14 +1,17 @@
-package com.wappenable.be.controller;
+package com.wappenable.be.product.controller;
 
-import com.wappenable.be.domain.Product;
+import com.wappenable.be.product.domain.Product;
 import com.wappenable.be.security.CustomUserDetails;
-import com.wappenable.be.service.ProductService;
+import com.wappenable.be.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.List;  
 // import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 @RestController
@@ -19,6 +22,7 @@ public class ProductController {
     private final ProductService productService;
 
     // ============================== 개발용 ==============================
+    @PreAuthorize("hasAnyRole('SHOP_OWNER', 'ADMIN')") 
     @PostMapping // 상품 등록 api
     public ResponseEntity<?> createProduct( 
             @RequestParam String name,
@@ -36,6 +40,7 @@ public class ProductController {
     }
 
     // 상품 수정 api
+    @PreAuthorize("hasAnyRole('SHOP_OWNER', 'ADMIN')") 
     @PutMapping("/{id}")
     public ResponseEntity<?> updateProduct (
         @PathVariable Long id,
@@ -53,6 +58,7 @@ public class ProductController {
     }
 
     // 상품 삭제 api
+    @PreAuthorize("hasAnyRole('SHOP_OWNER', 'ADMIN')") 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteProduct(
         @PathVariable Long id,
@@ -76,10 +82,27 @@ public class ProductController {
         return ResponseEntity.ok(productService.getProduct(keyword,sortBy, direction,pageable));
      }
 
+     // 상품 상세 조회 
      @GetMapping("/{id}")
      public ResponseEntity<Product> getProductDetail(@PathVariable Long id){
         return ResponseEntity.ok(productService.getProductDetail(id));
      }
+
+     // 상품 대량 등록
+     @PreAuthorize("hasAnyRole('SHOP_OWNER', 'ADMIN')") 
+     @PostMapping("/bulk")
+     public ResponseEntity<?> bulkUpload(
+        @RequestParam("csvFile") MultipartFile csvFile, 
+        @RequestParam(value = "zipFile", required = false) MultipartFile zipFile,
+        @RequestParam(required = false) Long sellerId
+     ) {
+        if (sellerId == null) sellerId =1L;
+
+        List<Map<String,Object>> result = productService.bulkUpload(csvFile,zipFile,sellerId);
+        return ResponseEntity.ok(Map.of("results",result));
+     }
+
+
     // ============================== 배포용 (주석처리 상태) ==============================
     /*
     @PostMapping
@@ -125,6 +148,19 @@ public class ProductController {
      public ResponseEntity<ProductResponse> getProductDetail(@PathVariable Long id){
         return ResponseEntity.ok(productService.getProductDetail(id));
      }
+
+       // 상품 대량 등록
+     @PostMapping("/bulk")
+     public ResponseEntity<?> bulkUpload(
+        @RequestParam("csvFile") MultipartFile csvFile, 
+        @RequestParam(value = "zipFile", required = false) MultipartFile zipFile,
+        @RequestParam(required = false) Long sellerId
+     ) {
+        if (sellerId == null) sellerId =1L;
+
+        List<Map<String,Object>> result = productService.bulkUpload(csvFile,zipFile,sellerId);
+        return ResponseEntity.ok(Map.of("results",result));
+     }
     */
 
-}
+} 
