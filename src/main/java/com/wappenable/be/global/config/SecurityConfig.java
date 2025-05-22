@@ -54,7 +54,9 @@ public class SecurityConfig {
                 .requestMatchers(
                     "/", 
                     "/api/users/signup", 
-                    "/api/users/login", 
+                    "/api/users/login",
+                    "/api/users/find-id", // 아이디 찾기
+                    "/api/users/find-pw", // 비밀번호 초기화
                     "/oauth2/**", 
                     "/error",
                     "/api/products", // 상품 전체 조회
