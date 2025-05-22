@@ -30,6 +30,10 @@ public class User {
     @Column(unique = true)
     private String email;
 
+    // 아이디/비밀번호 찾기를 위한 외부 이메일 주소
+    @Column(name = "recovery_email", nullable = false)
+    private String recoveryEmail;
+
     @Column(nullable = true)
     private String nickname; // [ ] : 사용자 정의 닉네임, 소셜 로그인은 null? 프론트에 입력란 없기 때문에 일단 null 허용
 

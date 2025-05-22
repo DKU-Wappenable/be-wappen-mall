@@ -41,7 +41,8 @@ class AuditIntegrationTest {
     @BeforeEach
     void setUp() {
         User user = User.builder()
-                .email(UUID.randomUUID() + "@audit.com")
+                .email(UUID.randomUUID().toString())
+                .recoveryEmail(UUID.randomUUID() + "@audit.com")
                 .nickname("Audit Test")
                 .passwordHash("pw")
                 .role(Role.USER)

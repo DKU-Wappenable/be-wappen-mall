@@ -5,9 +5,12 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.wappenable.be.global.security.jwt.TokenResponse;
+import com.wappenable.be.users.dto.request.FindEmailRequestDto;
+import com.wappenable.be.users.dto.request.FindPasswordRequestDto;
 import com.wappenable.be.users.dto.request.LoginRequestDto;
 import com.wappenable.be.users.dto.request.SignupRequestDto;
 import com.wappenable.be.users.service.UserService;
@@ -44,20 +47,20 @@ public class UserController {
         return ResponseEntity.ok("회원 탈퇴 완료");
     }
 
-    // TODO: 아이디/비밀번호 찾기
-    // 아이디(이메일) 찾기
-    // @PostMapping("/find-id")
-    // public ResponseEntity<?> findEmail(@Valid @RequestBody FindEmailRequestDto request) {
-    //     String email = userService.findEmailByNicknameAndPhone(request);
-    //     return ResponseEntity.ok(email);
-    // }
 
-    // // TODO : 비밀번호 찾기 (정보 확인 단계)
-    // @PostMapping("/find-pw")
-    // public ResponseEntity<?> findPassword(@Valid @RequestBody FindPasswordRequestDto request) {
-    //     userService.verifyUserForPasswordReset(request);
-    //     return ResponseEntity.ok("사용자 인증 성공. 비밀번호를 재설정하세요.");
-    // }
+    // 아이디 찾기
+    @PostMapping("/find-id")
+    public ResponseEntity<?> findEmail(@Valid @RequestBody FindEmailRequestDto request) {
+        String email = userService.findEmailByRecoveryEmail(request.getRecoveryEmail());
+        return ResponseEntity.ok(email);
+    }
+
+    // 비밀번호 찾기 -> 초기화
+    @PostMapping("/find-pw")
+    public ResponseEntity<?> findPassword(@Valid @RequestBody FindPasswordRequestDto request) {
+        userService.resetPasswordWithTempPassword(request);
+        return ResponseEntity.ok("비밀번호 초기화 완료. 비밀번호를 재설정하세요.");
+    }
 
     // // TODO : 비밀번호 재설정
     // @PostMapping("/reset-pw")

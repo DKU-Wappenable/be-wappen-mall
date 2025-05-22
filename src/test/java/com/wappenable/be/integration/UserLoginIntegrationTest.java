@@ -1,12 +1,12 @@
 package com.wappenable.be.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.wappenable.be.global.exception.users.InvalidPasswordException;
+import com.wappenable.be.global.exception.users.UserNotFoundException;
 import com.wappenable.be.users.dto.request.LoginRequestDto;
 import com.wappenable.be.users.entity.Role;
 import com.wappenable.be.users.entity.User;
 import com.wappenable.be.users.repository.UserRepository;
-
-import lombok.RequiredArgsConstructor;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -22,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -45,6 +44,7 @@ class UserLoginIntegrationTest {
     void setup() {
         User user = User.builder()
                 .email("login")
+                .recoveryEmail("login@email.com")
                 .nickname("로그인유저")
                 .passwordHash(passwordEncoder.encode("validPass123!"))
                 .role(Role.USER)
@@ -68,7 +68,7 @@ class UserLoginIntegrationTest {
     }
 
     @Test
-    @DisplayName("로그인 실패 - 이메일 없음")
+    @DisplayName("로그인 실패 - 아이디 없음")
     void login_fail_emailNotFound() throws Exception {
         LoginRequestDto request = new LoginRequestDto("notfound", "validPass123!");
 
@@ -77,7 +77,7 @@ class UserLoginIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isUnauthorized())
-            .andExpect(jsonPath("$.error").value("아이디가 존재하지 않습니다."));
+            .andExpect(jsonPath("$.error").value(UserNotFoundException.MESSAGE));
     }
 
     @Test
@@ -90,11 +90,11 @@ class UserLoginIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isUnauthorized())
-            .andExpect(jsonPath("$.error").value("비밀번호가 일치하지 않습니다."));
+            .andExpect(jsonPath("$.error").value(InvalidPasswordException.MESSAGE));
     }
 
     @Test
-    @DisplayName("로그인 실패 - 이메일 비어 있음")
+    @DisplayName("로그인 실패 - 아이디 비어 있음")
     void login_fail_blankEmail() throws Exception {
         LoginRequestDto request = new LoginRequestDto("", "somePassword");
 

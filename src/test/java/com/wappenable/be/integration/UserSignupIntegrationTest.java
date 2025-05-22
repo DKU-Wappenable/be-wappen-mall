@@ -1,6 +1,8 @@
 package com.wappenable.be.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.wappenable.be.global.exception.users.EmailAlreadyExistsException;
+import com.wappenable.be.global.exception.users.PasswordMismatchException;
 import com.wappenable.be.users.dto.request.SignupRequestDto;
 import com.wappenable.be.users.entity.Role;
 import com.wappenable.be.users.entity.User;
@@ -20,6 +22,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 import java.time.LocalDateTime;
 
@@ -46,6 +49,7 @@ class UserSignupIntegrationTest {
     void signup_success() throws Exception {
         SignupRequestDto request = new SignupRequestDto();
         request.setEmail("test");
+        request.setRecoveryEmail("recovery@example.com");
         request.setNickname("tester");
         request.setPassword("Newpass123!");
         request.setConfirmPassword("Newpass123!");
@@ -60,6 +64,7 @@ class UserSignupIntegrationTest {
 
         User savedUser = userRepository.findByEmail("test").orElse(null);
         assertThat(savedUser).isNotNull();
+        assertThat(savedUser.getRecoveryEmail()).isEqualTo("recovery@example.com");
         assertThat(savedUser.getNickname()).isEqualTo("tester");
     }
 
@@ -68,6 +73,7 @@ class UserSignupIntegrationTest {
     void signup_duplicateEmail() throws Exception {
         User existingUser = User.builder()
                 .email("duplicate")
+                .recoveryEmail("dup@example.com")
                 .nickname("dup")
                 .passwordHash("password123")
                 .role(Role.USER)
@@ -77,6 +83,7 @@ class UserSignupIntegrationTest {
 
         SignupRequestDto request = new SignupRequestDto();
         request.setEmail("duplicate");
+        request.setRecoveryEmail("dup@example.com");
         request.setNickname("newdup");
         request.setPassword("Newpass123!");
         request.setConfirmPassword("Newpass123!");
@@ -87,7 +94,8 @@ class UserSignupIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
             .andDo(print())
-            .andExpect(status().isConflict());
+            .andExpect(status().isConflict())
+            .andExpect(jsonPath("$.error").value(EmailAlreadyExistsException.MESSAGE));
 
         long count = userRepository.findAll().stream()
             .filter(u -> u.getEmail().equals("duplicate"))
@@ -100,6 +108,7 @@ class UserSignupIntegrationTest {
     void signup_passwordMismatch() throws Exception {
         SignupRequestDto request = new SignupRequestDto();
         request.setEmail("mismatch");
+        request.setRecoveryEmail("recovery@example.com");
         request.setNickname("MismatchUser");
         request.setPassword("Newpass123!");
         request.setConfirmPassword("Wrongpass123!"); // 비밀번호 확인 불일치
@@ -110,6 +119,7 @@ class UserSignupIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
             .andDo(print())
-            .andExpect(status().isBadRequest()); // UserService에서 HttpStatus.BAD_REQUEST 반환
+            .andExpect(status().isBadRequest()) // UserService에서 HttpStatus.BAD_REQUEST 반환
+            .andExpect(jsonPath("$.error").value(PasswordMismatchException.MESSAGE));
     }
 }

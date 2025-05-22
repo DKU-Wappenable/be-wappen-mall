@@ -1,21 +1,29 @@
 package com.wappenable.be.users.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
+
+import java.util.UUID;
+
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.wappenable.be.global.exception.CustomException;
+import com.wappenable.be.global.exception.users.CurrentUserNotFoundException;
+import com.wappenable.be.global.exception.users.EmailAlreadyExistsException;
+import com.wappenable.be.global.exception.users.InvalidPasswordException;
+import com.wappenable.be.global.exception.users.PasswordMismatchException;
+import com.wappenable.be.global.exception.users.RecoveryEmailNotFoundException;
+import com.wappenable.be.global.exception.users.UserNotFoundException;
+import com.wappenable.be.global.exception.users.UserRecoveryMismatchException;
 import com.wappenable.be.global.security.jwt.JwtUtil;
 import com.wappenable.be.global.security.jwt.TokenResponse;
+import com.wappenable.be.users.dto.request.FindPasswordRequestDto;
 import com.wappenable.be.users.dto.request.LoginRequestDto;
 import com.wappenable.be.users.dto.request.SignupRequestDto;
 import com.wappenable.be.users.entity.Role;
 import com.wappenable.be.users.entity.User;
 import com.wappenable.be.users.repository.UserRepository;
-
 
 @Service
 @RequiredArgsConstructor
@@ -28,11 +36,11 @@ public class UserService {
     @Transactional
     public void signup(SignupRequestDto request) {
         if (!request.getPassword().equals(request.getConfirmPassword())) {
-            throw new CustomException("비밀번호와 비밀번호 확인이 일치하지 않습니다", HttpStatus.BAD_REQUEST);
+            throw new PasswordMismatchException();
         }
         
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new CustomException("이미 존재하는 아이디입니다.", HttpStatus.CONFLICT);
+            throw new EmailAlreadyExistsException();
         }
 
         // TODO : 일단 회원가입 시 Role 선택 필드는 없는걸로, 기본은 USER, 추후 디벨롭
@@ -40,6 +48,7 @@ public class UserService {
 
         User user = User.builder()
                 .email(request.getEmail())
+                .recoveryEmail(request.getRecoveryEmail())
                 .nickname(request.getNickname())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .role(role)
@@ -51,10 +60,10 @@ public class UserService {
 
     public TokenResponse login(LoginRequestDto request) {
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new CustomException("아이디가 존재하지 않습니다.", HttpStatus.UNAUTHORIZED));
+                .orElseThrow(UserNotFoundException::new);
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
-            throw new CustomException("비밀번호가 일치하지 않습니다.", HttpStatus.UNAUTHORIZED);
+            throw new InvalidPasswordException();
         }
 
         String accessToken = jwtUtil.generateAccessToken(user.getEmail(), user.getRole().name());
@@ -68,8 +77,26 @@ public class UserService {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new CustomException("사용자를 찾을 수 없습니다.", HttpStatus.UNAUTHORIZED));
+                .orElseThrow(CurrentUserNotFoundException::new);
 
         userRepository.delete(user);
     }
+
+    // recoveryEmail로 아이디(email) 찾기
+    public String findEmailByRecoveryEmail(String recoveryEmail) {
+        return userRepository.findByRecoveryEmail(recoveryEmail)
+            .map(User::getEmail)
+            .orElseThrow(RecoveryEmailNotFoundException::new);
+    }
+
+    // 아이디(email) + 복구용 이메일(recoveryEmail)로 비밀번호 찾기 -> 초기화
+    public String resetPasswordWithTempPassword(FindPasswordRequestDto request) {
+        User user = userRepository.findByEmailAndRecoveryEmail(request.getEmail(), request.getRecoveryEmail())
+            .orElseThrow(UserRecoveryMismatchException::new);
+    
+        String tempPassword = UUID.randomUUID().toString().replace("-", "").substring(0, 10);
+        user.setPasswordHash(passwordEncoder.encode(tempPassword));
+        return tempPassword;
+    }
+    
 }

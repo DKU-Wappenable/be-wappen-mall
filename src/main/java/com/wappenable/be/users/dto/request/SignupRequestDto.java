@@ -22,9 +22,9 @@ public class SignupRequestDto {
     )
     private String email;
 
-    // @NotBlank(message = "이메일 입력은 필수입니다.")
-    // @Email(message = "이메일이 올바르지 않습니다.")
-    // private String email;
+    @NotBlank(message = "이메일 입력은 필수입니다.")
+    @Email(message = "이메일이 올바르지 않습니다.")
+    private String recoveryEmail;
     
     // TODO : PM은 nickname 두라고 함 / 프론트에서는 nickname란 없음. 일단 냅두고 User 도메인에서 nickname 필드를 null 허용으로 두었음.
     @NotBlank(message = "닉네임 입력은 필수입니다.")

@@ -32,6 +32,7 @@ public class AdminInitializer implements CommandLineRunner {
                 User admin = User.builder()
                         .email(adminEmail)
                         .nickname("관리자")
+                        .recoveryEmail("admin@email.com")
                         .passwordHash(passwordEncoder.encode(adminPassword))
                         .role(Role.ADMIN)
                         .build();

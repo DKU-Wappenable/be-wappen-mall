@@ -14,7 +14,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import com.wappenable.be.global.security.jwt.JwtAuthenticationFilter;
 import com.wappenable.be.global.security.oauth2.handler.OAuth2LoginFailureHandler;
@@ -51,9 +50,43 @@ public class SecurityConfig {
             )
             // [x] : Role 권한마다 접속 가능한 경로 지정
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/api/users/signup", "/api/users/login", "/oauth2/**", "/error").permitAll()
+                // 공개 API (비로그인 접근 허용)
+                .requestMatchers(
+                    "/", 
+                    "/api/users/signup", 
+                    "/api/users/login", 
+                    "/oauth2/**", 
+                    "/error",
+                    "/api/products", // 상품 전체 조회
+                    "/api/products/*", // 상품 상세 조회
+                    "/favicon.ico"
+                ).permitAll()
                 .requestMatchers("/api/admin/**").hasRole("ADMIN") // 내부적으로 "ROLE_ADMIN" 검사
-                .requestMatchers("/api/users/**").hasAnyRole("USER", "DESIGNER", "SHOP_OWNER", "ADMIN") // [ ] : 현재 DESIGNER,SHOP_OWNER에 관한 기능 존재하지 않음.
+                .requestMatchers("/api/users/**").hasAnyRole("USER", "SHOP_OWNER", "ADMIN")
+                
+                // 커스터마이징 기능
+                .requestMatchers(
+                    "/api/custom-images", // 상품 이미지 리스트 반환
+                    "/api/custom-images/save" // 커스터마이징 결과 저장
+                ).hasAnyRole("USER", "SHOP_OWNER", "ADMIN")
+
+                // 상품 등록,수정,삭제,대량등록
+                .requestMatchers(
+                    "/api/products", // 상품 등록
+                    "/api/products/*", // 상품 수정,삭제
+                    "/api/products/bulk" // 상품 대량 등록
+                ).hasAnyRole("SHOP_OWNER", "ADMIN")
+                .requestMatchers("/api/orders").hasRole("USER") // 주문
+                .requestMatchers("/api/orders/user").hasRole("USER") // 소비자용 주문 조회
+                .requestMatchers("/api/orders").hasAnyRole("SHOP_OWNER", "ADMIN") // 관리자용 전체 주문 목록 조회
+                .requestMatchers("/api/orders/*").hasAnyRole("USER", "SHOP_OWNER", "ADMIN") // 주문 상세 정보 조회
+
+                // 주문 상태 변경,삭제 관련
+                .requestMatchers(
+                    "/api/orders/*/confirm-deposit", // 무통장 입금시 결제 상태 대기중
+                    "/api/orders/*/cancel", // 주문 취소
+                    "/api/orders/*" // 주문 데이터 삭제
+                ).hasAnyRole("SHOP_OWNER", "ADMIN")
                 .anyRequest().authenticated()
             )
             .exceptionHandling(exception -> exception

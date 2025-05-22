@@ -1,13 +1,13 @@
 package com.wappenable.be.users.service;
 
-import com.wappenable.be.global.exception.CustomException;
+
+import com.wappenable.be.global.exception.admin.AdminUserNotFoundException;
 import com.wappenable.be.users.dto.response.UserListDto;
 import com.wappenable.be.users.entity.Role;
 import com.wappenable.be.users.entity.User;
 import com.wappenable.be.users.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,7 +23,7 @@ public class AdminUserService {
     @Transactional
     public void updateUserRole(Long userId, Role newRole) {
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new CustomException("사용자 없음", HttpStatus.BAD_REQUEST));
+            .orElseThrow(AdminUserNotFoundException::new);
 
         user.setRole(newRole);
     }
@@ -35,6 +35,7 @@ public class AdminUserService {
                 .map(user -> new UserListDto(
                         user.getId(),
                         user.getEmail(),
+                        user.getRecoveryEmail(),
                         user.getNickname(),
                         user.getRole()
                 ))

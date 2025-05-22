@@ -1,5 +1,6 @@
 package com.wappenable.be.users.dto.request;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -10,10 +11,11 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class FindPasswordRequestDto {
-    // [ ] : 필드 수정 필요
-    @NotBlank
-    private String loginId;
 
     @NotBlank
-    private String phoneNumber;
+    private String email;
+
+    @NotBlank
+    @Email(message = "이메일 형식이 올바르지 않습니다.")
+    private String recoveryEmail;
 }

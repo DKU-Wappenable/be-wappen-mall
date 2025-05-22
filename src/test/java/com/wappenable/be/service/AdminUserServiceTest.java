@@ -7,6 +7,7 @@ import com.wappenable.be.users.repository.UserRepository;
 import com.wappenable.be.users.service.AdminUserService;
 import com.wappenable.be.users.service.UserService;
 import com.wappenable.be.global.exception.CustomException;
+import com.wappenable.be.global.exception.admin.AdminUserNotFoundException;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,6 +35,7 @@ class AdminUserServiceTest {
     void setup() {
         signupRequest = new SignupRequestDto();
         signupRequest.setEmail("testuser");
+        signupRequest.setRecoveryEmail("recovery@example.com");
         signupRequest.setNickname("테스트유저");
         signupRequest.setPassword("password123");
         signupRequest.setRole(Role.USER);
@@ -46,6 +48,7 @@ class AdminUserServiceTest {
         User user = User.builder()
                 .id(userId)
                 .email("testuser")
+                .recoveryEmail("recovery@example.com")
                 .nickname("테스트")
                 .role(Role.USER)
                 .build();
@@ -68,8 +71,7 @@ class AdminUserServiceTest {
 
         // when & then
         assertThatThrownBy(() -> adminUserService.updateUserRole(userId, Role.ADMIN))
-                .isInstanceOf(CustomException.class)
-                .hasMessage("사용자 없음");
+                .isInstanceOf(AdminUserNotFoundException.class);
     }
 
     @Test
@@ -79,6 +81,7 @@ class AdminUserServiceTest {
             User.builder()
                 .id(1L)
                 .email("user1")
+                .recoveryEmail("recovery1@example.com")
                 .nickname("유저1")
                 .passwordHash("encoded1")
                 .role(Role.USER)
@@ -86,6 +89,7 @@ class AdminUserServiceTest {
             User.builder()
                 .id(2L)
                 .email("admin")
+                .recoveryEmail("recovery2@example.com")
                 .nickname("관리자")
                 .passwordHash("encoded2")
                 .role(Role.ADMIN)
@@ -100,8 +104,11 @@ class AdminUserServiceTest {
         // then
         assertThat(result).hasSize(2);
         assertThat(result.get(0).getEmail()).isEqualTo("user1");
+        assertThat(result.get(0).getRecoveryEmail()).isEqualTo("recovery1@example.com");
         assertThat(result.get(0).getRole()).isEqualTo(Role.USER);
+
         assertThat(result.get(1).getNickname()).isEqualTo("관리자");
+        assertThat(result.get(1).getRecoveryEmail()).isEqualTo("recovery2@example.com");
         assertThat(result.get(1).getRole()).isEqualTo(Role.ADMIN);
     }
 }

@@ -1,6 +1,9 @@
 package com.wappenable.be.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.wappenable.be.global.exception.admin.AdminPermissionRequiredException;
+import com.wappenable.be.global.exception.admin.RoleNotValidException;
+import com.wappenable.be.global.exception.users.UserNotFoundException;
 import com.wappenable.be.users.dto.request.RoleUpdateRequestDto;
 import com.wappenable.be.users.entity.Role;
 import com.wappenable.be.users.entity.User;
@@ -45,7 +48,8 @@ class AdminUserApiIntegrationTest {
     void setup() {
         // 테스트용 유저 저장
         User user = User.builder()
-                .email(UUID.randomUUID().toString() + "@wappen.com")
+                .email(UUID.randomUUID().toString())
+                .recoveryEmail(UUID.randomUUID().toString() + "@wappen.com")
                 .nickname("Test User")
                 .passwordHash("encrypted") // 패스워드 해시는 실제 로그인과 관계 없음
                 .role(Role.USER)
@@ -104,12 +108,14 @@ class AdminUserApiIntegrationTest {
                 .andExpect(jsonPath("$.length()").isNotEmpty());
     }  
 
+    // ADMIN이 아닌 계정이 전체 사용자 목록 조회를 시도함
     @Test
     @DisplayName("일반 사용자 목록 조회 → 403 Forbidden")
     @WithMockUser(roles = "USER")
     void getUserList_forbidden() throws Exception {
         mockMvc.perform(get("/api/admin/users"))
                 .andExpect(status().isForbidden());
+
     }
 
     @Test
