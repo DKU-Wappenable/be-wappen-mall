@@ -1,12 +1,12 @@
-package com.wappenable.be.users.controller;
+package com.wappenable.be.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.wappenable.be.users.dto.request.LoginRequest;
+import com.wappenable.be.global.exception.users.InvalidPasswordException;
+import com.wappenable.be.global.exception.users.UserNotFoundException;
+import com.wappenable.be.users.dto.request.LoginRequestDto;
 import com.wappenable.be.users.entity.Role;
 import com.wappenable.be.users.entity.User;
 import com.wappenable.be.users.repository.UserRepository;
-
-import lombok.RequiredArgsConstructor;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -16,20 +16,24 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @AutoConfigureMockMvc
+@TestPropertySource(properties = {
+    "admin.email=testAdmin",
+    "admin.password=testpass123"
+})
 @Transactional
 @SpringBootTest
-class UserControllerLoginTest {
+class UserLoginIntegrationTest {
 
     @Autowired private MockMvc mockMvc;
     @Autowired private ObjectMapper objectMapper;
@@ -39,7 +43,8 @@ class UserControllerLoginTest {
     @BeforeEach
     void setup() {
         User user = User.builder()
-                .email("login@example.com")
+                .email("login")
+                .recoveryEmail("login@email.com")
                 .nickname("로그인유저")
                 .passwordHash(passwordEncoder.encode("validPass123!"))
                 .role(Role.USER)
@@ -51,7 +56,7 @@ class UserControllerLoginTest {
     @Test
     @DisplayName("로그인 성공 - accessToken과 refreshToken 반환")
     void login_success() throws Exception {
-        LoginRequest request = new LoginRequest("login@example.com", "validPass123!");
+        LoginRequestDto request = new LoginRequestDto("login", "validPass123!");
 
         mockMvc.perform(post("/api/users/login")
                 .with(csrf())
@@ -63,35 +68,35 @@ class UserControllerLoginTest {
     }
 
     @Test
-    @DisplayName("로그인 실패 - 이메일 없음")
+    @DisplayName("로그인 실패 - 아이디 없음")
     void login_fail_emailNotFound() throws Exception {
-        LoginRequest request = new LoginRequest("notfound@example.com", "validPass123!");
+        LoginRequestDto request = new LoginRequestDto("notfound", "validPass123!");
 
         mockMvc.perform(post("/api/users/login")
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isUnauthorized())
-            .andExpect(jsonPath("$.error").value("이메일이 존재하지 않습니다."));
+            .andExpect(jsonPath("$.error").value(UserNotFoundException.MESSAGE));
     }
 
     @Test
     @DisplayName("로그인 실패 - 비밀번호 틀림")
     void login_fail_wrongPassword() throws Exception {
-        LoginRequest request = new LoginRequest("login@example.com", "wrongPassword!");
+        LoginRequestDto request = new LoginRequestDto("login", "wrongPassword!");
 
         mockMvc.perform(post("/api/users/login")
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isUnauthorized())
-            .andExpect(jsonPath("$.error").value("비밀번호가 일치하지 않습니다."));
+            .andExpect(jsonPath("$.error").value(InvalidPasswordException.MESSAGE));
     }
 
     @Test
-    @DisplayName("로그인 실패 - 이메일 비어 있음")
+    @DisplayName("로그인 실패 - 아이디 비어 있음")
     void login_fail_blankEmail() throws Exception {
-        LoginRequest request = new LoginRequest("", "somePassword");
+        LoginRequestDto request = new LoginRequestDto("", "somePassword");
 
         mockMvc.perform(post("/api/users/login")
                 .with(csrf())
@@ -103,7 +108,7 @@ class UserControllerLoginTest {
     @Test
     @DisplayName("로그인 실패 - 비밀번호 비어 있음")
     void login_fail_blankPassword() throws Exception {
-        LoginRequest request = new LoginRequest("login@example.com", "");
+        LoginRequestDto request = new LoginRequestDto("login", "");
 
         mockMvc.perform(post("/api/users/login")
                 .with(csrf())

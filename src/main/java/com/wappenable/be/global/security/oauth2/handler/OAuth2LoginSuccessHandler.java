@@ -53,7 +53,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         String accessToken = jwtUtil.generateAccessToken(email, user.getRole().name());
         String refreshToken = jwtUtil.generateRefreshToken(email, user.getRole().name());
 
-        // 리다이렉트
+        // TODO 프론트와 리다이렉트 주소 맞는지 확인 필요
         String redirectUrl = "http://localhost:5173/oauth/success?accessToken=" + accessToken + "&refreshToken=" + refreshToken;
         response.sendRedirect(redirectUrl);
     }
