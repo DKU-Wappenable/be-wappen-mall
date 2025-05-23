@@ -73,6 +73,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         User user = userRepository.findByEmail(email).orElseGet(() -> {
             User newUser = User.builder()
                     .email(finalEmail)
+                    .recoveryEmail(finalEmail)
                     .nickname(nickname)
                     .role(Role.USER)
                     .createdAt(LocalDateTime.now())

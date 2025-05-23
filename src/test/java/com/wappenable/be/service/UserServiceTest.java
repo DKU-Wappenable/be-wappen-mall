@@ -6,14 +6,18 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.wappenable.be.global.exception.users.EmailAlreadyExistsException;
 import com.wappenable.be.global.exception.users.PasswordMismatchException;
 import com.wappenable.be.global.exception.users.RecoveryEmailNotFoundException;
+import com.wappenable.be.global.exception.users.ResetPasswordNotAllowedException;
 import com.wappenable.be.global.exception.users.UserNotFoundException;
 import com.wappenable.be.global.exception.users.UserRecoveryMismatchException;
 import com.wappenable.be.users.dto.request.FindPasswordRequestDto;
+import com.wappenable.be.users.dto.request.ResetPasswordRequestDto;
 import com.wappenable.be.users.dto.request.SignupRequestDto;
 import com.wappenable.be.users.entity.Role;
 import com.wappenable.be.users.entity.User;
@@ -26,8 +30,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
+import java.util.List;
 import java.util.Optional;
-
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -146,6 +150,57 @@ class UserServiceTest {
             .isInstanceOf(UserRecoveryMismatchException.class);
     }
 
+    @Test
+    void 비밀번호재설정_성공() {
+        // given
+        // SecurityContext에 인증된 사용자 설정
+        UsernamePasswordAuthenticationToken authentication =
+            new UsernamePasswordAuthenticationToken("testuser", null, List.of());
+        SecurityContextHolder.getContext().setAuthentication(authentication);
 
+        ResetPasswordRequestDto request = new ResetPasswordRequestDto("testuser", "Newpass123!");
+        User user = User.builder()
+                .email("testuser")
+                .passwordHash("oldPasswordHash")
+                .build();
 
+        when(userRepository.findByEmail(request.getEmail())).thenReturn(Optional.of(user));
+        when(passwordEncoder.encode(request.getNewPassword())).thenReturn("encodedNewPassword");
+
+        // when
+        userService.resetPassword(request);
+
+        // then
+        assertThat(user.getPasswordHash()).isEqualTo("encodedNewPassword");
+        verify(userRepository).findByEmail(request.getEmail());
+        verify(passwordEncoder).encode(request.getNewPassword());
+    }
+
+    @Test
+    void 비밀번호재설정_실패_본인계정아님() {
+
+        // 인증 사용자와 요청 이메일이 일치해야 함
+        UsernamePasswordAuthenticationToken authentication =
+            new UsernamePasswordAuthenticationToken("test@example.com", null, List.of());
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        ResetPasswordRequestDto request = new ResetPasswordRequestDto("other@example.com", "Newpass123!");
+
+        assertThatThrownBy(() -> userService.resetPassword(request))
+            .isInstanceOf(ResetPasswordNotAllowedException.class);
+    }
+
+    @Test
+    void 비밀번호재설정_실패_사용자없음() {
+
+        UsernamePasswordAuthenticationToken authentication =
+            new UsernamePasswordAuthenticationToken("unknown", null, List.of());
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        ResetPasswordRequestDto request = new ResetPasswordRequestDto("unknown", "Newpass123!");
+        when(userRepository.findByEmail("unknown")).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> userService.resetPassword(request))
+            .isInstanceOf(UserNotFoundException.class);
+    }
 }
