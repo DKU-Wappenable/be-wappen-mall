@@ -4,7 +4,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 public enum Role {
-    USER, DESIGNER, SHOP_OWNER, ADMIN;
+    USER, SHOP_OWNER, ADMIN;
 
     /*
      * "Spring Security에서 사용자 권한을 표현할 때, 'ROLE_USER' 같은 형식이 필요하다면 필요"

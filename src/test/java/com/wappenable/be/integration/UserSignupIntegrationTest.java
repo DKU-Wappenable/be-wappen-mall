@@ -1,7 +1,9 @@
-package com.wappenable.be.users.controller;
+package com.wappenable.be.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.wappenable.be.users.dto.request.SignupRequest;
+import com.wappenable.be.global.exception.users.EmailAlreadyExistsException;
+import com.wappenable.be.global.exception.users.PasswordMismatchException;
+import com.wappenable.be.users.dto.request.SignupRequestDto;
 import com.wappenable.be.users.entity.Role;
 import com.wappenable.be.users.entity.User;
 import com.wappenable.be.users.repository.UserRepository;
@@ -11,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,13 +22,18 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 import java.time.LocalDateTime;
 
 @SpringBootTest
+@TestPropertySource(properties = {
+    "admin.email=testAdmin",
+    "admin.password=testpass123"
+})
 @AutoConfigureMockMvc
 @Transactional
-class UserControllerSingupTest {
+class UserSignupIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -39,11 +47,13 @@ class UserControllerSingupTest {
     @Test
     @DisplayName("회원가입 성공 - DB 저장 확인")
     void signup_success() throws Exception {
-        SignupRequest request = new SignupRequest();
-        request.setEmail("test@example.com");
+        SignupRequestDto request = new SignupRequestDto();
+        request.setEmail("test");
+        request.setRecoveryEmail("recovery@example.com");
         request.setNickname("tester");
         request.setPassword("Newpass123!");
-        request.setRole("USER");
+        request.setConfirmPassword("Newpass123!");
+        request.setRole(Role.USER);
 
         mockMvc.perform(post("/api/users/signup")
                 .with(csrf())
@@ -52,8 +62,9 @@ class UserControllerSingupTest {
             .andDo(print())
             .andExpect(status().isOk());
 
-        User savedUser = userRepository.findByEmail("test@example.com").orElse(null);
+        User savedUser = userRepository.findByEmail("test").orElse(null);
         assertThat(savedUser).isNotNull();
+        assertThat(savedUser.getRecoveryEmail()).isEqualTo("recovery@example.com");
         assertThat(savedUser.getNickname()).isEqualTo("tester");
     }
 
@@ -61,7 +72,8 @@ class UserControllerSingupTest {
     @DisplayName("중복 이메일로 회원가입 실패 - DB 저장 안됨")
     void signup_duplicateEmail() throws Exception {
         User existingUser = User.builder()
-                .email("duplicate@example.com")
+                .email("duplicate")
+                .recoveryEmail("dup@example.com")
                 .nickname("dup")
                 .passwordHash("password123")
                 .role(Role.USER)
@@ -69,22 +81,45 @@ class UserControllerSingupTest {
                 .build();
         userRepository.save(existingUser);
 
-        SignupRequest request = new SignupRequest();
-        request.setEmail("duplicate@example.com");
+        SignupRequestDto request = new SignupRequestDto();
+        request.setEmail("duplicate");
+        request.setRecoveryEmail("dup@example.com");
         request.setNickname("newdup");
         request.setPassword("Newpass123!");
-        request.setRole("USER");
+        request.setConfirmPassword("Newpass123!");
+        request.setRole(Role.USER);
 
         mockMvc.perform(post("/api/users/signup")
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
             .andDo(print())
-            .andExpect(status().isConflict());
+            .andExpect(status().isConflict())
+            .andExpect(jsonPath("$.error").value(EmailAlreadyExistsException.MESSAGE));
 
         long count = userRepository.findAll().stream()
-            .filter(u -> u.getEmail().equals("duplicate@example.com"))
+            .filter(u -> u.getEmail().equals("duplicate"))
             .count();
         assertThat(count).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("회원가입 실패 - 비밀번호와 비밀번호 확인 불일치")
+    void signup_passwordMismatch() throws Exception {
+        SignupRequestDto request = new SignupRequestDto();
+        request.setEmail("mismatch");
+        request.setRecoveryEmail("recovery@example.com");
+        request.setNickname("MismatchUser");
+        request.setPassword("Newpass123!");
+        request.setConfirmPassword("Wrongpass123!"); // 비밀번호 확인 불일치
+        request.setRole(Role.USER);
+
+        mockMvc.perform(post("/api/users/signup")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andDo(print())
+            .andExpect(status().isBadRequest()) // UserService에서 HttpStatus.BAD_REQUEST 반환
+            .andExpect(jsonPath("$.error").value(PasswordMismatchException.MESSAGE));
     }
 }

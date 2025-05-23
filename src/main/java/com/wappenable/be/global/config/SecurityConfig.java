@@ -5,15 +5,16 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import com.wappenable.be.global.security.jwt.JwtAuthenticationFilter;
 import com.wappenable.be.global.security.oauth2.handler.OAuth2LoginFailureHandler;
@@ -24,7 +25,8 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Configuration
-@EnableMethodSecurity(prePostEnabled = true)
+@EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true) // TODO : @PreAuthorized 등 사용가능하다. , (prePostEnabled = true) 는 뭐임?
 public class SecurityConfig {
     
     private final CustomOAuth2UserService customOAuth2UserService;
@@ -42,23 +44,55 @@ public class SecurityConfig {
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable()) // csrf.disable() -> 이거 나중에 지워야하나?
+            .cors(Customizer.withDefaults())
+            .csrf(csrf -> csrf.disable()) // [x]: csrf.disable() -> REST API에서는 CSRF 비활성화가 일반적, 대신 JWT, OAuth2 등 토큰 기반 인증 방식 사용
             // 현재 인증 방식 : JWT, 세션 저장이 필요 없는데 Spring Security는 기본적으로 세션에 인증 정보를 자동 저장하려고 시도함
             .sessionManagement(session -> session
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)  
             )
+            // [x] : Role 권한마다 접속 가능한 경로 지정
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/api/users/signup","/api/users/login",
-                "/login/**", "/oauth2/**", "/login/oauth2/**", "/error").permitAll() // 누구나 접근 가능
-                .anyRequest().authenticated() // 나머지는 인증 요구, 권한 없으면 접근 불가
+                // 공개 API (비로그인 접근 허용)
+                .requestMatchers(
+                    "/", 
+                    "/api/users/signup", 
+                    "/api/users/login",
+                    "/api/users/find-id", // 아이디 찾기
+                    "/api/users/find-pw", // 비밀번호 초기화
+                    "/oauth2/**", 
+                    "/error",
+                    "/api/products", // 상품 전체 조회
+                    "/api/products/*", // 상품 상세 조회
+                    "/favicon.ico"
+                ).permitAll()
+                .requestMatchers("/api/admin/**").hasRole("ADMIN") // 내부적으로 "ROLE_ADMIN" 검사
+                .requestMatchers("/api/users/**").hasAnyRole("USER", "SHOP_OWNER", "ADMIN")
+                
+                // 커스터마이징 기능
+                .requestMatchers(
+                    "/api/custom-images", // 상품 이미지 리스트 반환
+                    "/api/custom-images/save" // 커스터마이징 결과 저장
+                ).hasAnyRole("USER", "SHOP_OWNER", "ADMIN")
+
+                // 상품 등록,수정,삭제,대량등록
+                .requestMatchers(
+                    "/api/products", // 상품 등록
+                    "/api/products/*", // 상품 수정,삭제
+                    "/api/products/bulk" // 상품 대량 등록
+                ).hasAnyRole("SHOP_OWNER", "ADMIN")
+                .requestMatchers("/api/orders").hasRole("USER") // 주문
+                .requestMatchers("/api/orders/user").hasRole("USER") // 소비자용 주문 조회
+                .requestMatchers("/api/orders").hasAnyRole("SHOP_OWNER", "ADMIN") // 관리자용 전체 주문 목록 조회
+                .requestMatchers("/api/orders/*").hasAnyRole("USER", "SHOP_OWNER", "ADMIN") // 주문 상세 정보 조회
+
+                // 주문 상태 변경,삭제 관련
+                .requestMatchers(
+                    "/api/orders/*/confirm-deposit", // 무통장 입금시 결제 상태 대기중
+                    "/api/orders/*/cancel", // 주문 취소
+                    "/api/orders/*" // 주문 데이터 삭제
+                ).hasAnyRole("SHOP_OWNER", "ADMIN")
+                .anyRequest().authenticated()
             )
-            // .oauth2Login(oauth2 -> oauth2
-            //     .userInfoEndpoint(userInfo -> 
-            //         userInfo.userService(customOAuth2UserService)
-            //     )
-            //     .successHandler(oAuth2LoginSuccessHandler) // 성공 핸들러 등록
-            //     .failureHandler(oAuth2LoginFailureHandler) // 실패 핸들러 등록
-            // )
             .exceptionHandling(exception -> exception
                 .authenticationEntryPoint((request, response, authException) -> {
                     // 인증 실패 (401)
