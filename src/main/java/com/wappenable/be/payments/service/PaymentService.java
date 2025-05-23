@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Value;
+
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -20,6 +22,14 @@ public class PaymentService {
 
     private final RestTemplate restTemplate;
 
+    @Value("${iamport.key}")
+    private String impkey;
+
+    @Value("${iamport.secret}")
+    private String impsecret;
+    
+    private static final String TOKEN_URL =  "https://api.iamport.kr/users/getToken";
+
     public void processPayment(String method, BigDecimal amount) {
         switch (method.toUpperCase()) {
             case "BANK" -> log.info("[무통장 입금] 결제 완료: {}", amount);
@@ -29,15 +39,11 @@ public class PaymentService {
     }
 
     private void requestIamportToken(BigDecimal amount) {
-        String impKey = "2856233801677655";
-        String impSecret = "NuJZUokIZCw4qtKXSoGjdr8QV1j3utZqI3caxmkKDavfgFmJPW1hnnJUFMSd6StWJ0zopqYC73Dsbccz";
-        String tokenUrl = "https://api.iamport.kr/users/getToken";  
-
-        
+      
         // 1. JSON 바디 생성
         Map<String, String> tokenRequest = new HashMap<>();
-        tokenRequest.put("imp_key", impKey);
-        tokenRequest.put("imp_secret", impSecret);
+        tokenRequest.put("imp_key", impkey);
+        tokenRequest.put("imp_secret", impsecret);
         try {
 
             ObjectMapper mapper = new ObjectMapper();
@@ -52,7 +58,7 @@ public class PaymentService {
             HttpEntity<String> entity = new HttpEntity<>(json, headers);
 
             // 4. POST 요청
-            ResponseEntity<Map> tokenResponse = restTemplate.postForEntity(tokenUrl, entity, Map.class);
+            ResponseEntity<Map> tokenResponse = restTemplate.postForEntity(TOKEN_URL, entity, Map.class);
 
             // 5. 응답 처리
             if (tokenResponse.getStatusCode() == HttpStatus.OK && tokenResponse.getBody() != null) {

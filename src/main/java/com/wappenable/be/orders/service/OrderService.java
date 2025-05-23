@@ -93,7 +93,7 @@ public class OrderService {
 // 관리자 및 가게사장의 주문 목록 전체 조회
 @Transactional(readOnly= true)
 public List<OrderResponse> getAllOrders() {
-    return orderRespository.findAll().stream()
+    return orderRepository.findAll().stream()
             .map(this::convertToDto)
             .collect(Collectors.toList());
 }
@@ -159,7 +159,7 @@ public OrderResponse convertToDto(Order order) {
 
     // 주문 상태를 CANCEL로 변경
     @Transactional
-    public void cancleOrder(Long orderId){
+    public void cancelOrder(Long orderId){
         Order order = orderRepository.findById(orderId)
             .orElseThrow(() -> new EntityNotFoundException("주문을 찾을 수 없습니다."));
     
@@ -184,7 +184,7 @@ public OrderResponse convertToDto(Order order) {
         Order order = orderRepository.findById(orderId)
             .orElseThrow(() -> new EntityNotFoundException("주문을 찾을 수 없습니다."));
     
-        if (!order.getStatus().equals("CANCELED")) {
+        if (!order.getStatus().equals("CANCLED")) {
             throw new IllegalStateException("주문이 취소되지 않은 상태에서는 삭제할 수 없습니다.");
         }
     

@@ -31,6 +31,7 @@ public class CustomImageService {
             .collect(Collectors.toList());        
     }
 
+    // 사용자 커스터마이징 이미지 저장
     public void saveCustomizedImage(CustomizedImageRequest request) {
         CustomizedImage customizedImage = CustomizedImage.builder()
             .customizedImageUrl(request.getCustomizedImageUrl())

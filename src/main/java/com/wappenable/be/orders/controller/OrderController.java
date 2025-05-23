@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.wappenable.be.orders.domain.Order;
 import java.util.List;
-import com.wappenable.be.orders.dto.OrderDto;
+import com.wappenable.be.orders.dto.OrderResponse;
 import com.wappenable.be.security.CustomUserDetails;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -29,14 +29,14 @@ public class OrderController {
     // 전체 주문 목록 조회 (관리자, 가게 사장)
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'SHOP_OWNER')")
-    public ResponseEntity<List<OrderDto>> getAllOrders() {
+    public ResponseEntity<List<OrderResponse>> getAllOrders() {
         return ResponseEntity.ok(orderService.getAllOrders());
     }
 
     // 본인 주문 목록 조회 (사용자 전용)
     @GetMapping("/user")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<List<OrderDto>> getUserOrders(@AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ResponseEntity<List<OrderResponse>> getUserOrders(@AuthenticationPrincipal CustomUserDetails userDetails) {
         Long userId = userDetails.getId();
         return ResponseEntity.ok(orderService.getOrderDtosByUserId(userId));
     }
@@ -44,7 +44,7 @@ public class OrderController {
     //  주문 상세 조회 (본인 또는 관리자, 사장 허용)
     @GetMapping("/{orderId}")
     @PreAuthorize("hasAnyRole('USER','SHOP_OWNER','ADMIN')")
-    public ResponseEntity<OrderDto> getOrderDetail(@PathVariable Long orderId,@AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ResponseEntity<OrderResponse> getOrderDetail(@PathVariable Long orderId,@AuthenticationPrincipal CustomUserDetails userDetails) {
         return ResponseEntity.ok(orderService.getOrderDetailWithAccessCheck(orderId, userDetails));
     }
 
