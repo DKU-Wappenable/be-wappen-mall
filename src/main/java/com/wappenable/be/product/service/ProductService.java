@@ -1,6 +1,7 @@
 package com.wappenable.be.product.service;
 
 import com.wappenable.be.product.domain.Product;
+import com.wappenable.be.product.domain.ProductImage;   
 import com.wappenable.be.product.repository.ProductRepository;
 import com.wappenable.be.product.infrastructure.LocalFileUploader;
 import com.wappenable.be.product.infrastructure.S3Uploader;
@@ -21,7 +22,6 @@ import java.io.IOException;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipEntry;
 import java.nio.charset.StandardCharsets;
-import com.wappenable.be.product.domain.ProductImage;
 
 @Service
 @RequiredArgsConstructor
@@ -65,18 +65,22 @@ public class ProductService {
     }
 
     // 상품 수정
-    public Product updateProduct(Long id, String name, int price, int stock, MultipartFile[] images) {
+    public Product updateProduct(Long id, String name, int price, int stock, MultipartFile[] images, Long sellerId) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("상품이 존재하지 않습니다."));
 
+            
+                if(!product.getSellerId().equals(sellerId)) {
+                    throw new SecurityException("해당 상품을 수정할 권한이 없습니다.");
+                }
         product.setName(name);
         product.setPrice(price);
         product.setStock(stock);
         product.setUpdatedAt(LocalDateTime.now());
-        List<ProductImage> productImageEntities = new ArrayList<>();
+
 
         if (images != null) {
-           
+            List<ProductImage> productImageEntities = new ArrayList<>();
             for (MultipartFile file : images) {
                 if (file != null && !file.isEmpty()) {
                     String imageUrl = fileUploader.upload(file); 

@@ -6,6 +6,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.wappenable.be.orders.domain.Order;
+import java.util.List;
+import com.wappenable.be.orders.dto.OrderDto;
+import com.wappenable.be.security.CustomUserDetails;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+
 @RestController
 @RequestMapping("/api/orders")
 @RequiredArgsConstructor
@@ -20,19 +26,28 @@ public class OrderController {
         return ResponseEntity.ok("주문이 완료되었습니다.");
     }
 
-    // USER ID 기반 주문 목록 조회
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<?> getOrdersByUserId(@PathVariable Long userId) {
-    return ResponseEntity.ok(orderService.getOrderDtosByUserId(userId));
+    // 전체 주문 목록 조회 (관리자, 가게 사장)
+    @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'SHOP_OWNER')")
+    public ResponseEntity<List<OrderDto>> getAllOrders() {
+        return ResponseEntity.ok(orderService.getAllOrders());
     }
 
-    // 주문ID 기반 주문 조회 -- 주문 상세정보 페이지
-    @GetMapping("/{orderId}")
-    public ResponseEntity<?> getOrderById(@PathVariable Long orderId) {
-    Order order = orderService.getOrderById(orderId);
-    return ResponseEntity.ok(orderService.convertToDto(order));
+    // 본인 주문 목록 조회 (사용자 전용)
+    @GetMapping("/user")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<List<OrderDto>> getUserOrders(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        Long userId = userDetails.getId();
+        return ResponseEntity.ok(orderService.getOrderDtosByUserId(userId));
     }
    
+    //  주문 상세 조회 (본인 또는 관리자, 사장 허용)
+    @GetMapping("/{orderId}")
+    @PreAuthorize("hasAnyRole('USER','SHOP_OWNER','ADMIN')")
+    public ResponseEntity<OrderDto> getOrderDetail(@PathVariable Long orderId,@AuthenticationPrincipal CustomUserDetails userDetails) {
+        return ResponseEntity.ok(orderService.getOrderDetailWithAccessCheck(orderId, userDetails));
+    }
+
     
     // 무통장 입금시 결제 상태를 대기중에서 PAID로 변경
     @PreAuthorize("hasAnyRole('SHOP_OWNER', 'ADMIN')") 
@@ -45,8 +60,8 @@ public class OrderController {
     // 주문 취소시 주문 상태를 CANCLEED 로 변경
     @PreAuthorize("hasAnyRole('SHOP_OWNER', 'ADMIN')") 
     @PatchMapping("/{orderId}/cancel")
-    public ResponseEntity<String> cancleOrder(@PathVariable Long orderId){
-        orderService.cancleOrder(orderId);
+    public ResponseEntity<String> cancelOrder(@PathVariable Long orderId){
+        orderService.cancelOrder(orderId);
         return ResponseEntity.ok("주문이 취소되었습니다.");
     }  
 
@@ -56,6 +71,5 @@ public class OrderController {
     public ResponseEntity<String> deleteOrder(@PathVariable Long orderId){
         orderService.deleteOrder(orderId);
         return ResponseEntity.ok("주문이 삭제되었습니다.");
-    
-    }
+        }
 }
