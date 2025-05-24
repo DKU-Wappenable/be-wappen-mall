@@ -8,17 +8,20 @@ import com.wappenable.be.orders.dto.OrderRequest;
 import com.wappenable.be.orders.repository.OrderRepository;
 import com.wappenable.be.product.repository.ProductRepository;
 import com.wappenable.be.payments.service.PaymentService;
+import com.wappenable.be.orders.dto.OrderResponse;
+import com.wappenable.be.orders.dto.OrderItemResponse;
+import com.wappenable.be.global.security.auth.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import jakarta.persistence.EntityNotFoundException;
-import java.util.List;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import com.wappenable.be.orders.dto.OrderResponse;
-import com.wappenable.be.orders.dto.OrderItemResponse;
+import java.util.List;
 import java.util.stream.Collectors;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -29,10 +32,10 @@ public class OrderService {
     private final PaymentService paymentService;
 
     @Transactional
-    public void processOrder(OrderRequest request){
+    public void processOrder(OrderRequest request,Long buyerId){
         String status = request.getPaymentMethod().equalsIgnoreCase("BANK") ? "WAITING_FOR_DEPOSIT" : "PAID";
         Order order = Order.builder() // 주문 객체 초기화
-                .buyerId(request.getBuyerId())
+                .buyerId(buyerId)
                 .status(status)
                 .deliveryAddress(request.getDeliveryAddress())
                 .deliveryRequest(request.getDeliveryRequest())
@@ -75,17 +78,43 @@ public class OrderService {
         // 주문 저장
         orderRepository.save(order);
         
-        log.info("[이메일 전송] {}번 사용자에게 주문 확인 이메일 전송됨", request.getBuyerId());
+        log.info("[이메일 전송] {}번 사용자에게 주문 확인 이메일 전송됨", buyerId);
     }
 
-    // 주문 조회 
+    // 소비자의 주문 목록 조회
     @Transactional(readOnly = true)
-public List<OrderResponse> getOrderDtosByUserId(Long userId) {
+    public List<OrderResponse> getOrderDtosByUserId(Long userId) {
     List<Order> orders = orderRepository.findAll().stream()
         .filter(order -> order.getBuyerId().equals(userId))
         .collect(Collectors.toList());
 
     return orders.stream().map(this::convertToDto).collect(Collectors.toList());
+}
+// 관리자 및 가게사장의 주문 목록 전체 조회
+@Transactional(readOnly= true)
+public List<OrderResponse> getAllOrders() {
+    return orderRepository.findAll().stream()
+            .map(this::convertToDto)
+            .collect(Collectors.toList());
+}
+
+// 주문 상세 조회: 사용자 본인 또는 관리자/사장 권한 체크 포함
+@Transactional(readOnly = true)
+public OrderResponse getOrderDetailWithAccessCheck(Long orderId, CustomUserDetails userDetails) {
+    Order order = orderRepository.findById(orderId)
+            .orElseThrow(() -> new EntityNotFoundException("주문을 찾을 수 없습니다."));
+
+    Long loginUserId = userDetails.getId();
+    String role = userDetails.getAuthorities().iterator().next().getAuthority();
+
+    boolean isOwner = order.getBuyerId().equals(loginUserId);
+    boolean isAdminOrShopOwner = role.equals("ROLE_ADMIN") || role.equals("ROLE_SHOP_OWNER");
+
+    if (!isOwner && !isAdminOrShopOwner) {
+        throw new AccessDeniedException("접근 권한이 없습니다.");
+    }
+
+    return convertToDto(order);
 }
 
 @Transactional(readOnly = true)
@@ -130,11 +159,14 @@ public OrderResponse convertToDto(Order order) {
 
     // 주문 상태를 CANCEL로 변경
     @Transactional
-    public void cancleOrder(Long orderId){
+    public void cancelOrder(Long orderId, Long userId){
         Order order = orderRepository.findById(orderId)
             .orElseThrow(() -> new EntityNotFoundException("주문을 찾을 수 없습니다."));
     
-        // 주문 상태 변경
+        if(!order.getBuyerId().equals(userId)) {
+            throw new AccessDeniedException("자신의 주문만 취소할 수 있습니다.");
+        }
+        // 주문 상태 변경   
         order.setStatus("CANCELED");
     
         // 재고 복구 로직 추가

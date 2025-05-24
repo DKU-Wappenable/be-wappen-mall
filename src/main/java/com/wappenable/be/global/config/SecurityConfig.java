@@ -83,15 +83,16 @@ public class SecurityConfig {
                     "/api/products/*", // 상품 수정,삭제
                     "/api/products/bulk" // 상품 대량 등록
                 ).hasAnyRole("SHOP_OWNER", "ADMIN")
-                .requestMatchers("/api/orders").hasRole("USER") // 주문
+                .requestMatchers(
+                    "/api/orders", // 주문
+                    "/api/orders/*/cancel").hasRole("USER") // 주문 취소 
                 .requestMatchers("/api/orders/user").hasRole("USER") // 소비자용 주문 조회
-                .requestMatchers("/api/orders").hasAnyRole("SHOP_OWNER", "ADMIN") // 관리자용 전체 주문 목록 조회
+                .requestMatchers("/api/orders/list").hasAnyRole("SHOP_OWNER", "ADMIN") // 관리자용 전체 주문 목록 조회
                 .requestMatchers("/api/orders/*").hasAnyRole("USER", "SHOP_OWNER", "ADMIN") // 주문 상세 정보 조회
 
                 // 주문 상태 변경,삭제 관련
                 .requestMatchers(
                     "/api/orders/*/confirm-deposit", // 무통장 입금시 결제 상태 대기중
-                    "/api/orders/*/cancel", // 주문 취소
                     "/api/orders/*" // 주문 데이터 삭제
                 ).hasAnyRole("SHOP_OWNER", "ADMIN")
                 .anyRequest().authenticated()
