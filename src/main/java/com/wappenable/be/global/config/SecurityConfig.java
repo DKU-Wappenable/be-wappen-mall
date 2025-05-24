@@ -5,7 +5,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -15,6 +14,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
+
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.wappenable.be.global.security.jwt.JwtAuthenticationFilter;
 import com.wappenable.be.global.security.oauth2.handler.OAuth2LoginFailureHandler;
@@ -42,9 +45,9 @@ public class SecurityConfig {
     }
 
     @Bean
-    SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    SecurityFilterChain filterChain(HttpSecurity http, CorsConfigurationSource corsConfigSource) throws Exception {
         http
-            .cors(Customizer.withDefaults())
+            .cors(cors -> cors.configurationSource(corsConfigSource))
             .csrf(csrf -> csrf.disable()) // [x]: csrf.disable() -> REST API에서는 CSRF 비활성화가 일반적, 대신 JWT, OAuth2 등 토큰 기반 인증 방식 사용
             // 현재 인증 방식 : JWT, 세션 저장이 필요 없는데 Spring Security는 기본적으로 세션에 인증 정보를 자동 저장하려고 시도함
             .sessionManagement(session -> session
@@ -58,7 +61,7 @@ public class SecurityConfig {
                     "/api/users/signup", 
                     "/api/users/login",
                     "/api/users/find-id", // 아이디 찾기
-                    "/api/users/find-pw", // 비밀번호 초기화
+                    "/api/users/find-pw", // 비밀번호 찾기(초기화)
                     "/oauth2/**", 
                     "/error",
                     "/api/products", // 상품 전체 조회
@@ -112,16 +115,16 @@ public class SecurityConfig {
         )
         .addFilterBefore(jwtAuthenticationFilter, AnonymousAuthenticationFilter.class);
         
-    // OAuth2 설정은 ClientRegistrationRepository 빈이 있을 때만 적용
-    if (context.getBeanProvider(ClientRegistrationRepository.class).getIfAvailable() != null) {
-        http.oauth2Login(oauth2 -> oauth2
-            .userInfoEndpoint(userInfo -> 
-                userInfo.userService(customOAuth2UserService)
-            )
-            .successHandler(oAuth2LoginSuccessHandler)
-            .failureHandler(oAuth2LoginFailureHandler)
-        );
-    } 
-    return http.build();
+        // OAuth2 설정은 ClientRegistrationRepository 빈이 있을 때만 적용
+        if (context.getBeanProvider(ClientRegistrationRepository.class).getIfAvailable() != null) {
+            http.oauth2Login(oauth2 -> oauth2
+                .userInfoEndpoint(userInfo -> 
+                    userInfo.userService(customOAuth2UserService)
+                )
+                .successHandler(oAuth2LoginSuccessHandler)
+                .failureHandler(oAuth2LoginFailureHandler)
+            );
+        } 
+        return http.build();
     }
 }

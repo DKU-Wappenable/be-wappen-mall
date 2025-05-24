@@ -14,12 +14,14 @@ import com.wappenable.be.global.exception.users.EmailAlreadyExistsException;
 import com.wappenable.be.global.exception.users.InvalidPasswordException;
 import com.wappenable.be.global.exception.users.PasswordMismatchException;
 import com.wappenable.be.global.exception.users.RecoveryEmailNotFoundException;
+import com.wappenable.be.global.exception.users.ResetPasswordNotAllowedException;
 import com.wappenable.be.global.exception.users.UserNotFoundException;
 import com.wappenable.be.global.exception.users.UserRecoveryMismatchException;
 import com.wappenable.be.global.security.jwt.JwtUtil;
 import com.wappenable.be.global.security.jwt.TokenResponse;
 import com.wappenable.be.users.dto.request.FindPasswordRequestDto;
 import com.wappenable.be.users.dto.request.LoginRequestDto;
+import com.wappenable.be.users.dto.request.ResetPasswordRequestDto;
 import com.wappenable.be.users.dto.request.SignupRequestDto;
 import com.wappenable.be.users.entity.Role;
 import com.wappenable.be.users.entity.User;
@@ -90,6 +92,7 @@ public class UserService {
     }
 
     // 아이디(email) + 복구용 이메일(recoveryEmail)로 비밀번호 찾기 -> 초기화
+    // CHECKLIST : 보통 비밀번호 초기화 되면 로그인 후에 바로 비밀번호 재설정을 할텐데 초기화 할 때 영문, 숫자, 특수문자 조합으로 비밀번호를 초기화 해줘야할까?
     public String resetPasswordWithTempPassword(FindPasswordRequestDto request) {
         User user = userRepository.findByEmailAndRecoveryEmail(request.getEmail(), request.getRecoveryEmail())
             .orElseThrow(UserRecoveryMismatchException::new);
@@ -97,6 +100,23 @@ public class UserService {
         String tempPassword = UUID.randomUUID().toString().replace("-", "").substring(0, 10);
         user.setPasswordHash(passwordEncoder.encode(tempPassword));
         return tempPassword;
+    }
+
+    // 비밀번호 재설정
+    // TODO 이후에 본인 비밀번호도 추가하는 걸로, 필수 기능 먼저 구현하자.
+    @Transactional
+    public void resetPassword(ResetPasswordRequestDto request) {
+        String currentUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        if (!currentUserEmail.equals(request.getEmail())) {
+            throw new ResetPasswordNotAllowedException();
+        }
+
+        User user = userRepository.findByEmail(currentUserEmail)
+            .orElseThrow(UserNotFoundException::new);
+
+        String encodedPassword = passwordEncoder.encode(request.getNewPassword());
+        user.setPasswordHash(encodedPassword);
     }
     
 }

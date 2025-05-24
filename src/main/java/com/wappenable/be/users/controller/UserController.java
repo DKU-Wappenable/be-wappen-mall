@@ -5,13 +5,13 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.wappenable.be.global.security.jwt.TokenResponse;
 import com.wappenable.be.users.dto.request.FindEmailRequestDto;
 import com.wappenable.be.users.dto.request.FindPasswordRequestDto;
 import com.wappenable.be.users.dto.request.LoginRequestDto;
+import com.wappenable.be.users.dto.request.ResetPasswordRequestDto;
 import com.wappenable.be.users.dto.request.SignupRequestDto;
 import com.wappenable.be.users.service.UserService;
 
@@ -58,15 +58,15 @@ public class UserController {
     // 비밀번호 찾기 -> 초기화
     @PostMapping("/find-pw")
     public ResponseEntity<?> findPassword(@Valid @RequestBody FindPasswordRequestDto request) {
-        userService.resetPasswordWithTempPassword(request);
-        return ResponseEntity.ok("비밀번호 초기화 완료. 비밀번호를 재설정하세요.");
+        String tempPassword = userService.resetPasswordWithTempPassword(request);
+        return ResponseEntity.ok(tempPassword);
     }
 
-    // // TODO : 비밀번호 재설정
-    // @PostMapping("/reset-pw")
-    // public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordRequestDto request) {
-    //     userService.resetPassword(request);
-    //     return ResponseEntity.ok("비밀번호가 성공적으로 변경되었습니다.");
-    // }
+    // 비밀번호 재설정
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordRequestDto request) {
+        userService.resetPassword(request);
+        return ResponseEntity.ok("비밀번호가 성공적으로 변경되었습니다.");
+    }
 
 } 
