@@ -1,8 +1,8 @@
 package com.wappenable.be.global.security.jwt;
 
+import com.wappenable.be.global.security.auth.CustomUserDetails;
 import com.wappenable.be.users.entity.User;
 import com.wappenable.be.users.repository.UserRepository;
-
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -53,26 +52,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = parseToken(request);
         if (token != null && jwtUtil.validateToken(token)) {
             String email = jwtUtil.extractEmail(token);
-            log.debug("Extracted email from JWT: {}", email);  // 토큰에서 추출된 이메일 확인용 로그
+            log.debug("Extracted email from JWT: {}", email);
 
             Optional<User> userOptional = userRepository.findByEmail(email);
-            if (userOptional.isEmpty()) {
-                log.warn("No user found with email: {}", email);  // 사용자 조회 실패 로그
-            } else {
-                // TODO 아래 user가 com.wappenable.be.users.entity.User 인가 아니면 org.springframework.security.core.userdetails.User. 인가?
+            if (userOptional.isPresent()) {
                 User user = userOptional.get();
-                UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
-                        .username(user.getEmail())
-                        .password("") // 비밀번호는 필요 없음
-                        .authorities(List.of(user.getRole().toGrantedAuthority()))
-                        .build();
-        
-                UsernamePasswordAuthenticationToken authToken =
+                CustomUserDetails userDetails = new CustomUserDetails(user);  // ✅ 핵심: 직접 만든 객체 사용
+
+                UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-        
-                SecurityContextHolder.getContext().setAuthentication(authToken);
-                log.debug("SecurityContext에 인증 정보 설정 완료: {}", user.getEmail());
+                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+                log.debug("✅ SecurityContext에 CustomUserDetails 등록 완료: {}", user.getEmail());
+            } else {
+                log.warn("❌ 해당 이메일로 사용자를 찾을 수 없습니다: {}", email);
             }
         }
 

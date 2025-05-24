@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import com.wappenable.be.global.security.auth.CustomUserDetails;
 
 
 import java.util.List;
@@ -29,8 +31,10 @@ public class CustomImageController {
     // 커스터마이징 결과를 저장
     @PostMapping("/save")
     @PreAuthorize("hasAnyRole('USER', 'SHOP_OWNER', 'ADMIN')")
-    public ResponseEntity<String> saveCustomizedImage(@RequestBody CustomizedImageRequest request){
-        customImageService.saveCustomizedImage(request);
+    public ResponseEntity<String> saveCustomizedImage(@RequestBody CustomizedImageRequest request,
+    @AuthenticationPrincipal CustomUserDetails userDetails){
+        Long userId = userDetails.getUser().getId();
+        customImageService.saveCustomizedImage(request,userId);
         return ResponseEntity.ok("커스터마이징 이미지 저장 완료");
     }
 }

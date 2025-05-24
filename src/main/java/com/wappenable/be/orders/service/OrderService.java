@@ -10,7 +10,7 @@ import com.wappenable.be.product.repository.ProductRepository;
 import com.wappenable.be.payments.service.PaymentService;
 import com.wappenable.be.orders.dto.OrderResponse;
 import com.wappenable.be.orders.dto.OrderItemResponse;
-import com.wappenable.be.security.CustomUserDetails;
+import com.wappenable.be.global.security.auth.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
@@ -32,10 +32,10 @@ public class OrderService {
     private final PaymentService paymentService;
 
     @Transactional
-    public void processOrder(OrderRequest request){
+    public void processOrder(OrderRequest request,Long buyerId){
         String status = request.getPaymentMethod().equalsIgnoreCase("BANK") ? "WAITING_FOR_DEPOSIT" : "PAID";
         Order order = Order.builder() // 주문 객체 초기화
-                .buyerId(request.getBuyerId())
+                .buyerId(buyerId)
                 .status(status)
                 .deliveryAddress(request.getDeliveryAddress())
                 .deliveryRequest(request.getDeliveryRequest())
@@ -78,7 +78,7 @@ public class OrderService {
         // 주문 저장
         orderRepository.save(order);
         
-        log.info("[이메일 전송] {}번 사용자에게 주문 확인 이메일 전송됨", request.getBuyerId());
+        log.info("[이메일 전송] {}번 사용자에게 주문 확인 이메일 전송됨", buyerId);
     }
 
     // 소비자의 주문 목록 조회
@@ -159,11 +159,14 @@ public OrderResponse convertToDto(Order order) {
 
     // 주문 상태를 CANCEL로 변경
     @Transactional
-    public void cancelOrder(Long orderId){
+    public void cancelOrder(Long orderId, Long userId){
         Order order = orderRepository.findById(orderId)
             .orElseThrow(() -> new EntityNotFoundException("주문을 찾을 수 없습니다."));
     
-        // 주문 상태 변경
+        if(!order.getBuyerId().equals(userId)) {
+            throw new AccessDeniedException("자신의 주문만 취소할 수 있습니다.");
+        }
+        // 주문 상태 변경   
         order.setStatus("CANCELED");
     
         // 재고 복구 로직 추가
@@ -184,7 +187,7 @@ public OrderResponse convertToDto(Order order) {
         Order order = orderRepository.findById(orderId)
             .orElseThrow(() -> new EntityNotFoundException("주문을 찾을 수 없습니다."));
     
-        if (!order.getStatus().equals("CANCLED")) {
+        if (!order.getStatus().equals("CANCELED")) {
             throw new IllegalStateException("주문이 취소되지 않은 상태에서는 삭제할 수 없습니다.");
         }
     

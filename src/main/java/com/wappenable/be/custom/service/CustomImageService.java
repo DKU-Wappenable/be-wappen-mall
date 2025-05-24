@@ -32,12 +32,12 @@ public class CustomImageService {
     }
 
     // 사용자 커스터마이징 이미지 저장
-    public void saveCustomizedImage(CustomizedImageRequest request) {
-        CustomizedImage customizedImage = CustomizedImage.builder()
-            .customizedImageUrl(request.getCustomizedImageUrl())
-            .title(request.getTitle())
-            .userId(request.getUserId())
-            .build();
-        customizedImageRepository.save(customizedImage);
+    public void saveCustomizedImage(CustomizedImageRequest request, Long userId) {
+        CustomizedImage image = new CustomizedImage();
+        image.setTitle(request.getTitle());
+        image.setCustomizedImageUrl(request.getCustomizedImageUrl());
+        image.setUserId(userId); // 여기서 주입
+    
+        customizedImageRepository.save(image);
     }
  }  
