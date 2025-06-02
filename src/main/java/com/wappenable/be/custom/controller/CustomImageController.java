@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import com.wappenable.be.global.security.auth.CustomUserDetails;
-
+import com.wappenable.be.custom.dto.CustomizedImageResponse;
 
 import java.util.List;
 
@@ -23,18 +23,23 @@ public class CustomImageController {
 
     // 모든 상품 이미지 리스트를 반환
     @GetMapping
-    @PreAuthorize("hasAnyRole('USER','SHOP_OWNER', 'ADMIN')")
-    public ResponseEntity<List<ProductImageResponse>> getAllCustomImages() {
-        return ResponseEntity.ok(customImageService.getAllImages());
+    @PreAuthorize("hasAnyRole('USER','SHOP_OWNER','ADMIN')")
+    public ResponseEntity<List<CustomizedImageResponse>> getAllCustomImages() {
+        List<CustomizedImageResponse> responseList = customImageService.getAllCustomizedImages();
+        return ResponseEntity.ok(responseList);
     }
-
-    // 커스터마이징 결과를 저장
+    /*
+    커스터마이징 완료된 이미지를 Base64 형태로 받아서 로컬 저장 후 DTO 반환
+     → 프론트에서 “커스터마이징 화면”에서 저장 버튼을 눌렀을 때 호출
+     */
     @PostMapping("/save")
-    @PreAuthorize("hasAnyRole('USER', 'SHOP_OWNER', 'ADMIN')")
-    public ResponseEntity<String> saveCustomizedImage(@RequestBody CustomizedImageRequest request,
-    @AuthenticationPrincipal CustomUserDetails userDetails){
-        Long userId = userDetails.getUser().getId();
-        customImageService.saveCustomizedImage(request,userId);
-        return ResponseEntity.ok("커스터마이징 이미지 저장 완료");
+    @PreAuthorize("hasAnyRole('USER','SHOP_OWNER','ADMIN')")
+    public ResponseEntity<CustomizedImageResponse> uploadCustomizedImage(
+            @RequestBody CustomizedImageRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        Long userId = userDetails.getId();
+        CustomizedImageResponse resp = customImageService.saveCustomizedImage(request, userId);
+        return ResponseEntity.ok(resp);
     }
 }

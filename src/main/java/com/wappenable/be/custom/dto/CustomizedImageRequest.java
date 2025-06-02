@@ -5,8 +5,8 @@ import lombok.*;
 
 @Data
 public class CustomizedImageRequest {
-    private String customizedImageUrl;
+    private Long originalProductId;
     private String title;
-    private Long userId;
+    private String customizedImageUrl;
 
 }

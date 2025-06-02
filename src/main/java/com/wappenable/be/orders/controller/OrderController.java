@@ -78,4 +78,16 @@ public class OrderController {
         orderService.deleteOrder(orderId);
         return ResponseEntity.ok("주문이 삭제되었습니다.");
         }
+
+    // 장바구니 주문
+
+    @PostMapping("/checkout")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<Void> checkout(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                         @RequestParam String address,
+                                         @RequestParam String requestMessage) {
+        Long userId = userDetails.getId();
+        orderService.checkout(userId, address, requestMessage);
+        return ResponseEntity.ok().build();
+    } 
 }
