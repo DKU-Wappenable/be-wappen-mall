@@ -56,12 +56,12 @@ public class UserController {
         ));
     }
 
-    // TODO: 로그아웃
-    @PostMapping("/logout")
-    public ResponseEntity<?> logout(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        userService.logout(userDetails.getUser().getEmail());
-        return ResponseEntity.ok("로그아웃 되었습니다.");
-    }
+    // // TODO: 로그아웃
+    // @PostMapping("/logout")
+    // public ResponseEntity<?> logout(@AuthenticationPrincipal CustomUserDetails userDetails) {
+    //     userService.logout(userDetails.getUser().getEmail());
+    //     return ResponseEntity.ok("로그아웃 되었습니다.");
+    // }
     
 
     // 회원탈퇴
