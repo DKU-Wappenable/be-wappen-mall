@@ -34,8 +34,8 @@ public class User {
     @Column(name = "recovery_email", nullable = false)
     private String recoveryEmail;
 
-    @Column(nullable = true)
-    private String nickname; // [ ] : 사용자 정의 닉네임, 소셜 로그인은 null? 프론트에 입력란 없기 때문에 일단 null 허용
+    @Column(nullable = false)
+    private String nickname; // [ ] : 소셜 로그인은 닉네임 어떻게 설정?
 
     @Column(name = "password_hash", nullable = true) // 소셜 계정을 위해 null이어도 허가
     private String passwordHash;

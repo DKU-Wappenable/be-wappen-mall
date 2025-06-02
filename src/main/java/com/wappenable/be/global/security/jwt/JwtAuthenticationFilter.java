@@ -1,5 +1,6 @@
 package com.wappenable.be.global.security.jwt;
 
+import com.wappenable.be.global.security.auth.CustomUserDetails;
 import com.wappenable.be.users.entity.User;
 import com.wappenable.be.users.repository.UserRepository;
 
@@ -61,12 +62,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             } else {
                 // TODO 아래 user가 com.wappenable.be.users.entity.User 인가 아니면 org.springframework.security.core.userdetails.User. 인가?
                 User user = userOptional.get();
-                UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
-                        .username(user.getEmail())
-                        .password("") // 비밀번호는 필요 없음
-                        .authorities(List.of(user.getRole().toGrantedAuthority()))
-                        .build();
         
+                CustomUserDetails userDetails = new CustomUserDetails(user); // 위 주석에서 아래로 수정함.
+
                 UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
