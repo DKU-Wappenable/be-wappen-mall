@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.wappenable.be.global.security.auth.CustomUserDetails;
 import com.wappenable.be.global.security.jwt.TokenResponse;
+import com.wappenable.be.users.dto.request.DeleteUserRequestDto;
 import com.wappenable.be.users.dto.request.FindEmailRequestDto;
 import com.wappenable.be.users.dto.request.FindPasswordRequestDto;
 import com.wappenable.be.users.dto.request.LoginRequestDto;
@@ -64,9 +65,9 @@ public class UserController {
     
 
     // 회원탈퇴
-    @DeleteMapping
-    public ResponseEntity<?> deleteUser() {
-        userService.deleteCurrentUser();
+    @DeleteMapping("/withdraw")
+    public ResponseEntity<?> deleteUser(@RequestBody @Valid DeleteUserRequestDto request) {
+        userService.deleteCurrentUser(request);
         return ResponseEntity.ok("회원 탈퇴 완료");
     }
 

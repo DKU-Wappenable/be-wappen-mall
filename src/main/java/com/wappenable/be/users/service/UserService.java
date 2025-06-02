@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import java.util.Map;
 import java.util.UUID;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -13,17 +14,20 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 
+import com.wappenable.be.global.exception.CustomException;
 import com.wappenable.be.global.exception.users.CurrentUserNotFoundException;
 import com.wappenable.be.global.exception.users.EmailAlreadyExistsException;
 import com.wappenable.be.global.exception.users.InvalidPasswordException;
 import com.wappenable.be.global.exception.users.PasswordMismatchException;
 import com.wappenable.be.global.exception.users.RecoveryEmailNotFoundException;
 import com.wappenable.be.global.exception.users.ResetPasswordNotAllowedException;
+import com.wappenable.be.global.exception.users.UnauthorizedAccessException;
 import com.wappenable.be.global.exception.users.UserNotFoundException;
 import com.wappenable.be.global.exception.users.UserRecoveryMismatchException;
 import com.wappenable.be.global.security.auth.CustomUserDetails;
 import com.wappenable.be.global.security.jwt.JwtUtil;
 import com.wappenable.be.global.security.jwt.TokenResponse;
+import com.wappenable.be.users.dto.request.DeleteUserRequestDto;
 import com.wappenable.be.users.dto.request.FindPasswordRequestDto;
 import com.wappenable.be.users.dto.request.LoginRequestDto;
 import com.wappenable.be.users.dto.request.ResetPasswordRequestDto;
@@ -110,12 +114,23 @@ public class UserService {
 
     // 회원 탈퇴, DB에서도 삭제
     @Transactional
-    public void deleteCurrentUser() {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+    public void deleteCurrentUser(DeleteUserRequestDto request) {
+        String currentEmail = SecurityContextHolder.getContext().getAuthentication().getName();
 
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(CurrentUserNotFoundException::new);
+        // 1. 요청한 email과 현재 로그인한 사용자 email이 같은지 확인
+        if (!currentEmail.equals(request.getEmail())) {
+            throw new UnauthorizedAccessException();
+        }
 
+        User user = userRepository.findByEmail(currentEmail)
+            .orElseThrow(CurrentUserNotFoundException::new);
+
+        // 2. 비밀번호 확인
+        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+            throw new InvalidPasswordException();
+        }
+
+        // 3. 삭제
         userRepository.delete(user);
     }
 
