@@ -1,6 +1,6 @@
 package com.wappenable.be.users.dto.request;
 
-import com.wappenable.be.users.entity.Role;
+import com.wappenable.be.users.domain.Role;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

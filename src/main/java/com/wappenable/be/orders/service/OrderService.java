@@ -13,7 +13,7 @@ import com.wappenable.be.orders.repository.OrderRepository;
 import com.wappenable.be.payments.service.PaymentService;
 import com.wappenable.be.product.domain.Product;
 import com.wappenable.be.product.repository.ProductRepository;
-import com.wappenable.be.users.entity.User;
+import com.wappenable.be.users.domain.User;
 import com.wappenable.be.users.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;

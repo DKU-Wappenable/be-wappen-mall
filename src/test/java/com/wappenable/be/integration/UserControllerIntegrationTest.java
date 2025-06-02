@@ -1,8 +1,8 @@
 package com.wappenable.be.integration;
 
 import com.wappenable.be.global.security.auth.CustomUserDetails;
-import com.wappenable.be.users.entity.Role;
-import com.wappenable.be.users.entity.User;
+import com.wappenable.be.users.domain.Role;
+import com.wappenable.be.users.domain.User;
 import com.wappenable.be.users.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

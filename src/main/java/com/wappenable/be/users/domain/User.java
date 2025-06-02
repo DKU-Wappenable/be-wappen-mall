@@ -1,4 +1,4 @@
-package com.wappenable.be.users.entity;
+package com.wappenable.be.users.domain;
 
 import jakarta.persistence.*;
 import lombok.*;

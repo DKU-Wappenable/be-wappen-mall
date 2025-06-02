@@ -17,11 +17,11 @@ import com.wappenable.be.global.exception.users.RecoveryEmailNotFoundException;
 import com.wappenable.be.global.exception.users.ResetPasswordNotAllowedException;
 import com.wappenable.be.global.exception.users.UserNotFoundException;
 import com.wappenable.be.global.exception.users.UserRecoveryMismatchException;
+import com.wappenable.be.users.domain.Role;
+import com.wappenable.be.users.domain.User;
 import com.wappenable.be.users.dto.request.FindPasswordRequestDto;
 import com.wappenable.be.users.dto.request.ResetPasswordRequestDto;
 import com.wappenable.be.users.dto.request.SignupRequestDto;
-import com.wappenable.be.users.entity.Role;
-import com.wappenable.be.users.entity.User;
 import com.wappenable.be.users.repository.UserRepository;
 import com.wappenable.be.users.service.UserService;
 

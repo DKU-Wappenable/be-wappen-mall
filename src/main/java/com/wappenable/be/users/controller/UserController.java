@@ -49,8 +49,8 @@ public class UserController {
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(@AuthenticationPrincipal CustomUserDetails userDetails) {
         return ResponseEntity.ok(Map.of(
-            "user ID", userDetails.getUser().getEmail(),
-            "email", userDetails.getUser().getRecoveryEmail(),
+            "email", userDetails.getUser().getEmail(),
+            "recoveryEmail", userDetails.getUser().getRecoveryEmail(),
             "nickname", userDetails.getUser().getNickname(),
             "role", userDetails.getUser().getRole().name()
         ));
@@ -65,7 +65,7 @@ public class UserController {
     
 
     // 회원탈퇴
-    @DeleteMapping("/withdraw")
+    @PostMapping("/withdraw")
     public ResponseEntity<?> deleteUser(@RequestBody @Valid DeleteUserRequestDto request) {
         userService.deleteCurrentUser(request);
         return ResponseEntity.ok("회원 탈퇴 완료");

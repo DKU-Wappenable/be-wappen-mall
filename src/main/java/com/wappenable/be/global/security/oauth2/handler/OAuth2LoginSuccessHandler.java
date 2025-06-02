@@ -9,7 +9,7 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.stereotype.Component;
 
 import com.wappenable.be.global.security.jwt.JwtUtil;
-import com.wappenable.be.users.entity.User;
+import com.wappenable.be.users.domain.User;
 import com.wappenable.be.users.repository.UserRepository;
 
 import jakarta.servlet.ServletException;

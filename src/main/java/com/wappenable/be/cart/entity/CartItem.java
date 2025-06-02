@@ -1,10 +1,11 @@
 package com.wappenable.be.cart.entity;
 
-import com.wappenable.be.users.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+
+import com.wappenable.be.users.domain.User;
 
 @Entity
 @Table(name = "cart_item")
