@@ -1,6 +1,6 @@
 package com.wappenable.be.users.dto.response;
 
-import com.wappenable.be.users.entity.Role;
+import com.wappenable.be.users.domain.Role;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -5,7 +5,8 @@ import com.wappenable.be.cart.dto.CartItemResponseDto;
 import com.wappenable.be.cart.dto.CartItemUpdateRequestDto;
 import com.wappenable.be.cart.service.CartItemService;
 import com.wappenable.be.global.security.auth.CustomUserDetails;
-import com.wappenable.be.users.entity.User;
+import com.wappenable.be.users.domain.User;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;

@@ -1,9 +1,10 @@
 package com.wappenable.be.global.security.auth;
 
-import com.wappenable.be.users.entity.User;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+
+import com.wappenable.be.users.domain.User;
 
 import java.util.Collection;
 import java.util.Collections;
