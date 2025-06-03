@@ -66,6 +66,17 @@ public class SecurityConfig {
                     "/api/products/*", // 상품 상세 조회
                     "/favicon.ico"
                 ).permitAll()
+                
+                // Swagger 관련 경로 허용 (개발 환경에서 API 문서 접근을 위해)
+                .requestMatchers(
+                    "/swagger-ui/**",           // Swagger UI 리소스
+                    "/swagger-ui.html",         // Swagger UI 메인 페이지
+                    "/v3/api-docs/**",          // OpenAPI 3.0 문서
+                    "/v3/api-docs",             // OpenAPI 3.0 문서 루트
+                    "/swagger-resources/**",    // Swagger 리소스
+                    "/webjars/**"              // Swagger UI에서 사용하는 웹 리소스
+                ).permitAll()
+                
                 .requestMatchers("/api/admin/**").hasRole("ADMIN") // 내부적으로 "ROLE_ADMIN" 검사
                 .requestMatchers("/api/users/me").hasAnyRole("USER", "SHOP_OWNER", "ADMIN")
                 .requestMatchers("/api/users/**").hasAnyRole("USER", "SHOP_OWNER", "ADMIN")
