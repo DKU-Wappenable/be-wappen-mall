@@ -2,7 +2,7 @@ package com.wappenable.be.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wappenable.be.global.exception.users.InvalidPasswordException;
-import com.wappenable.be.global.exception.users.UserNotFoundException;
+import com.wappenable.be.global.exception.users.LoginUserNotFoundException;
 import com.wappenable.be.users.domain.Role;
 import com.wappenable.be.users.domain.User;
 import com.wappenable.be.users.dto.request.LoginRequestDto;
@@ -77,7 +77,7 @@ class UserLoginIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isUnauthorized())
-            .andExpect(jsonPath("$.error").value(UserNotFoundException.MESSAGE));
+            .andExpect(jsonPath("$.error").value(LoginUserNotFoundException.MESSAGE));
     }
 
     @Test

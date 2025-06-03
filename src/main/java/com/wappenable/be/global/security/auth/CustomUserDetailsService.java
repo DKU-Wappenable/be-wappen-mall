@@ -1,6 +1,6 @@
 package com.wappenable.be.global.security.auth;
 
-import com.wappenable.be.global.exception.users.UserNotFoundException;
+import com.wappenable.be.global.exception.users.LoginUserNotFoundException;
 import com.wappenable.be.users.domain.User;
 import com.wappenable.be.users.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +18,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(email)
-            .orElseThrow(UserNotFoundException::new);
+            .orElseThrow(LoginUserNotFoundException::new);
         return new CustomUserDetails(user);
     }
 }
