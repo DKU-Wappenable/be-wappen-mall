@@ -64,7 +64,8 @@ public class SecurityConfig {
                     "/error",
                     "/api/products", // 상품 전체 조회
                     "/api/products/*", // 상품 상세 조회
-                    "/favicon.ico"
+                    "/favicon.ico",
+                    "/uploads/**" // 이미지 URL 경로 공개
                 ).permitAll()
                 .requestMatchers("/api/admin/**").hasRole("ADMIN") // 내부적으로 "ROLE_ADMIN" 검사
                 .requestMatchers("/api/users/me").hasAnyRole("USER", "SHOP_OWNER", "ADMIN")
