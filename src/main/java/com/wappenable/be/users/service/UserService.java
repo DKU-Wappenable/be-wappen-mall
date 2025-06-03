@@ -1,6 +1,7 @@
 package com.wappenable.be.users.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
 import java.util.UUID;
@@ -22,11 +23,13 @@ import com.wappenable.be.global.exception.users.PasswordMismatchException;
 import com.wappenable.be.global.exception.users.RecoveryEmailNotFoundException;
 import com.wappenable.be.global.exception.users.ResetPasswordNotAllowedException;
 import com.wappenable.be.global.exception.users.UnauthorizedAccessException;
-import com.wappenable.be.global.exception.users.UserNotFoundException;
+import com.wappenable.be.global.exception.users.LoginUserNotFoundException;
 import com.wappenable.be.global.exception.users.UserRecoveryMismatchException;
 import com.wappenable.be.global.security.auth.CustomUserDetails;
 import com.wappenable.be.global.security.jwt.JwtUtil;
 import com.wappenable.be.global.security.jwt.TokenResponse;
+import com.wappenable.be.global.security.oauth2.domain.AuthProvider;
+import com.wappenable.be.terms.repository.UserTermsAgreementRepository;
 import com.wappenable.be.users.domain.Role;
 import com.wappenable.be.users.domain.User;
 import com.wappenable.be.users.dto.request.DeleteUserRequestDto;
@@ -34,14 +37,17 @@ import com.wappenable.be.users.dto.request.FindPasswordRequestDto;
 import com.wappenable.be.users.dto.request.LoginRequestDto;
 import com.wappenable.be.users.dto.request.ResetPasswordRequestDto;
 import com.wappenable.be.users.dto.request.SignupRequestDto;
+import com.wappenable.be.users.dto.response.LogoutResponse;
 import com.wappenable.be.users.repository.UserRepository;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserTermsAgreementRepository userTermsAgreementRepository;
     private final JwtUtil jwtUtil;
 
     @Transactional
@@ -71,48 +77,70 @@ public class UserService {
 
     public TokenResponse login(LoginRequestDto request) {
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(UserNotFoundException::new);
+                .orElseThrow(LoginUserNotFoundException::new);
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
             throw new InvalidPasswordException();
         }
 
+        // NOTE : 약관 동의 여부 확인
+        boolean agreed = userTermsAgreementRepository.existsByUserAndFirstIsTrueAndCheckedIsTrue(user);
+
         String accessToken = jwtUtil.generateAccessToken(user.getEmail(), user.getRole().name());
         String refreshToken = jwtUtil.generateRefreshToken(user.getEmail(), user.getRole().name());
 
-        return new TokenResponse(accessToken, refreshToken);
+        return new TokenResponse(accessToken, refreshToken, agreed);
     }
 
     // 로그아웃
     // @Transactional
-    // public void logout(String email) {
-    //     com.wappenable.be.users.domain.User user = userRepository.findByEmail(email)
-    //         .orElseThrow(UserNotFoundException::new);
-    
-    //     // Refresh Token 제거 (일반 사용자든 소셜 사용자든 공통)
+    // public LogoutResponse logout(User user) {
+    //     // 1. RefreshToken 제거
     //     user.setRefreshToken(null);
-    
-    //     // 소셜 사용자에 대해 추가 처리 필요 시 분기
-    //     if (user.getProvider() != null) {
-    //         log.info("소셜 사용자 로그아웃 처리: " + user.getProvider());
-    //         // 필요 시 Kakao, Google API 호출해서 세션 해제 (선택 사항)
+
+    //     String logoutUrl = null;
+
+    //     // 2. 소셜 로그인 사용자라면 provider 확인
+    //     if (!user.getSocialAccounts().isEmpty()) {
+    //         AuthProvider provider = user.getSocialAccounts().get(0).getProvider(); // 현재 로그인된 provider로 변경해야 함
+
+    //         switch (provider) {
+    //             case GOOGLE -> logoutUrl = "https://accounts.google.com/Logout";
+    //             case KAKAO -> logoutUrl = "https://kauth.kakao.com/oauth/logout?client_id=YOUR_KAKAO_CLIENT_ID&logout_redirect_uri=YOUR_REDIRECT_URI";
+    //             case NAVER -> logoutUrl = "https://nid.naver.com/nidlogin.logout";
+    //         }
+
+    //         log.info("소셜 사용자 로그아웃 처리: {}", provider);
     //     }
-    
+
     //     userRepository.save(user);
+    //     return new LogoutResponse("로그아웃 완료", logoutUrl);
     // }
 
     // 내 정보 조회
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        User user = userDetails.getUser();
+        boolean agreed = userTermsAgreementRepository
+            .findByUser(user)
+            .stream()
+            .anyMatch(a -> a.isFirst() && a.isChecked());
+
         return ResponseEntity.ok(Map.of(
-            "user ID", userDetails.getUser().getEmail(),
-            "email", userDetails.getUser().getRecoveryEmail(),
-            "nickname", userDetails.getUser().getNickname(),
-            "role", userDetails.getUser().getRole().name()
+            "email", user.getEmail(),
+            "nickname", user.getNickname(),
+            "recoveryEmail", user.getRecoveryEmail(),
+            "role", user.getRole().name(),
+            "termsAccepted", agreed
         ));
     }
 
-    // 회원 탈퇴
+    /*  TODO : 회원 탈퇴
+        1. 일반 사용자
+            1-a. 소셜 계정 없는 일반 사용자
+            1-b. 소셜 계정도 존재하는 일반 사용자
+        2. 소셜 계정만 사용하는 사용자
+    */
     @Transactional
     public void deleteCurrentUser(DeleteUserRequestDto request) {
         String currentEmail = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -162,7 +190,7 @@ public class UserService {
         }
 
         User user = userRepository.findByEmail(currentUserEmail)
-            .orElseThrow(UserNotFoundException::new);
+            .orElseThrow(LoginUserNotFoundException::new);
 
         String encodedPassword = passwordEncoder.encode(request.getNewPassword());
         user.setPasswordHash(encodedPassword);

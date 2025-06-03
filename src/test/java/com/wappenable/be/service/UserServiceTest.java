@@ -15,7 +15,7 @@ import com.wappenable.be.global.exception.users.EmailAlreadyExistsException;
 import com.wappenable.be.global.exception.users.PasswordMismatchException;
 import com.wappenable.be.global.exception.users.RecoveryEmailNotFoundException;
 import com.wappenable.be.global.exception.users.ResetPasswordNotAllowedException;
-import com.wappenable.be.global.exception.users.UserNotFoundException;
+import com.wappenable.be.global.exception.users.LoginUserNotFoundException;
 import com.wappenable.be.global.exception.users.UserRecoveryMismatchException;
 import com.wappenable.be.users.domain.Role;
 import com.wappenable.be.users.domain.User;
@@ -202,6 +202,6 @@ class UserServiceTest {
         when(userRepository.findByEmail("unknown")).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> userService.resetPassword(request))
-            .isInstanceOf(UserNotFoundException.class);
+            .isInstanceOf(LoginUserNotFoundException.class);
     }
 }

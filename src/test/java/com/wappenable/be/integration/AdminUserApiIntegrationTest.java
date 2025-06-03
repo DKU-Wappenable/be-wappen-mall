@@ -3,7 +3,7 @@ package com.wappenable.be.integration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wappenable.be.global.exception.admin.AdminPermissionRequiredException;
 import com.wappenable.be.global.exception.admin.RoleNotValidException;
-import com.wappenable.be.global.exception.users.UserNotFoundException;
+import com.wappenable.be.global.exception.users.LoginUserNotFoundException;
 import com.wappenable.be.users.domain.Role;
 import com.wappenable.be.users.domain.User;
 import com.wappenable.be.users.dto.request.RoleUpdateRequestDto;
