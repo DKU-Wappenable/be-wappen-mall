@@ -2,9 +2,9 @@ package com.wappenable.be.users.service;
 
 
 import com.wappenable.be.global.exception.admin.AdminUserNotFoundException;
+import com.wappenable.be.users.domain.Role;
+import com.wappenable.be.users.domain.User;
 import com.wappenable.be.users.dto.response.UserListDto;
-import com.wappenable.be.users.entity.Role;
-import com.wappenable.be.users.entity.User;
 import com.wappenable.be.users.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;

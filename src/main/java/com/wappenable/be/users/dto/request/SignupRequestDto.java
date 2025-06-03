@@ -1,6 +1,6 @@
 package com.wappenable.be.users.dto.request;
 
-import com.wappenable.be.users.entity.Role;
+import com.wappenable.be.users.domain.Role;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -28,7 +28,7 @@ public class SignupRequestDto {
     
     // TODO : PM은 nickname 두라고 함 / 프론트에서는 nickname란 없음. 일단 냅두고 User 도메인에서 nickname 필드를 null 허용으로 두었음.
     // @NotBlank(message = "닉네임 입력은 필수입니다.")
-    @Pattern(regexp = "^[A-Za-z0-9]{2,20}$", message = "닉네임은 영어 또는 숫자만 포함한 2~20자여야 합니다.") // 공백 방어
+    @Pattern(regexp = "^[A-Za-z0-9]{2,10}$", message = "닉네임은 영어 또는 숫자만 포함한 2~10자여야 합니다.") // 공백 방어
     private String nickname;
 
     @NotBlank(message = "비밀번호 입력은 필수입니다.")

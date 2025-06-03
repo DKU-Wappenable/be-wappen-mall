@@ -1,7 +1,11 @@
 package com.wappenable.be.users.controller;
 
+import java.util.Map;
+
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,7 +20,9 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 
+import com.wappenable.be.global.security.auth.CustomUserDetails;
 import com.wappenable.be.global.security.jwt.TokenResponse;
+import com.wappenable.be.users.dto.request.DeleteUserRequestDto;
 import com.wappenable.be.users.dto.request.FindEmailRequestDto;
 import com.wappenable.be.users.dto.request.FindPasswordRequestDto;
 import com.wappenable.be.users.dto.request.LoginRequestDto;
@@ -75,19 +81,31 @@ public class UserController {
         TokenResponse response = userService.login(request);    
         return ResponseEntity.ok(response);
     }
+
+    // 내 정보 조회
+    // TODO : 내 정보 조회 시 어떤 값을 프론트에서 보여주는지 일치시키기 / 서비스 로직에 작성 안하고 바로 반환?
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentUser(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        return ResponseEntity.ok(Map.of(
+            "email", userDetails.getUser().getEmail(),
+            "recoveryEmail", userDetails.getUser().getRecoveryEmail(),
+            "nickname", userDetails.getUser().getNickname(),
+            "role", userDetails.getUser().getRole().name()
+        ));
+    }
+
+    // // TODO: 로그아웃
+    // @PostMapping("/logout")
+    // public ResponseEntity<?> logout(@AuthenticationPrincipal CustomUserDetails userDetails) {
+    //     userService.logout(userDetails.getUser().getEmail());
+    //     return ResponseEntity.ok("로그아웃 되었습니다.");
+    // }
     
-    // TODO: 로그아웃
 
     // 회원탈퇴
-    @DeleteMapping
-    @Operation(summary = "회원탈퇴", description = "현재 로그인한 사용자의 계정을 삭제합니다.")
-    @SecurityRequirement(name = "Bearer Authentication")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "회원탈퇴 성공"),
-        @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")
-    })
-    public ResponseEntity<?> deleteUser() {
-        userService.deleteCurrentUser();
+    @PostMapping("/withdraw")
+    public ResponseEntity<?> deleteUser(@RequestBody @Valid DeleteUserRequestDto request) {
+        userService.deleteCurrentUser(request);
         return ResponseEntity.ok("회원 탈퇴 완료");
     }
 

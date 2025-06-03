@@ -6,7 +6,8 @@ import com.wappenable.be.cart.entity.CartItem;
 import com.wappenable.be.cart.repository.CartItemRepository;
 import com.wappenable.be.product.domain.Product;
 import com.wappenable.be.product.repository.ProductRepository;
-import com.wappenable.be.users.entity.User;
+import com.wappenable.be.users.domain.User;
+
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

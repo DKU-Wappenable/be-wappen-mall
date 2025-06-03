@@ -4,8 +4,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import com.wappenable.be.users.entity.Role;
-import com.wappenable.be.users.entity.User;
+import com.wappenable.be.users.domain.Role;
+import com.wappenable.be.users.domain.User;
 import com.wappenable.be.users.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;

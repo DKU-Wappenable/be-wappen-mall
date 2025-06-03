@@ -12,10 +12,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.wappenable.be.users.domain.Role;
 import com.wappenable.be.users.dto.request.RoleUpdateRequestDto;
 import com.wappenable.be.users.dto.response.RoleChangedMessageDto;
 import com.wappenable.be.users.dto.response.UserListDto;
-import com.wappenable.be.users.entity.Role;
 import com.wappenable.be.users.service.AdminUserService;
 import com.wappenable.be.users.service.UserService;
 

@@ -1,8 +1,8 @@
 package com.wappenable.be.integration;
 
+import com.wappenable.be.users.domain.Role;
+import com.wappenable.be.users.domain.User;
 import com.wappenable.be.users.dto.request.RoleUpdateRequestDto;
-import com.wappenable.be.users.entity.Role;
-import com.wappenable.be.users.entity.User;
 import com.wappenable.be.users.repository.UserRepository;
 
 import org.junit.jupiter.api.BeforeEach;

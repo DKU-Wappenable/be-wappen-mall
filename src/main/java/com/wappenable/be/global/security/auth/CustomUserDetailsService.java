@@ -1,7 +1,7 @@
 package com.wappenable.be.global.security.auth;
 
 import com.wappenable.be.global.exception.users.UserNotFoundException;
-import com.wappenable.be.users.entity.User;
+import com.wappenable.be.users.domain.User;
 import com.wappenable.be.users.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;

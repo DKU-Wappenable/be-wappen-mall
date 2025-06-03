@@ -3,9 +3,9 @@ package com.wappenable.be.global.security.oauth2.service;
 import com.wappenable.be.global.security.oauth2.domain.AuthProvider;
 import com.wappenable.be.global.security.oauth2.userinfo.OAuth2UserInfo;
 import com.wappenable.be.global.security.oauth2.userinfo.OAuth2UserInfoFactory;
-import com.wappenable.be.users.entity.Role;
-import com.wappenable.be.users.entity.SocialAccount;
-import com.wappenable.be.users.entity.User;
+import com.wappenable.be.users.domain.Role;
+import com.wappenable.be.users.domain.SocialAccount;
+import com.wappenable.be.users.domain.User;
 import com.wappenable.be.users.repository.SocialAccountRepository;
 import com.wappenable.be.users.repository.UserRepository;
 
