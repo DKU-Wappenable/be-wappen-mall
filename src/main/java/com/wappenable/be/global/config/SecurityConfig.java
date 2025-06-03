@@ -15,9 +15,7 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
 
-import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.wappenable.be.global.security.jwt.JwtAuthenticationFilter;
 import com.wappenable.be.global.security.oauth2.handler.OAuth2LoginFailureHandler;
@@ -69,6 +67,7 @@ public class SecurityConfig {
                     "/favicon.ico"
                 ).permitAll()
                 .requestMatchers("/api/admin/**").hasRole("ADMIN") // 내부적으로 "ROLE_ADMIN" 검사
+                .requestMatchers("/api/users/me").hasAnyRole("USER", "SHOP_OWNER", "ADMIN")
                 .requestMatchers("/api/users/**").hasAnyRole("USER", "SHOP_OWNER", "ADMIN")
                 
                 // 커스터마이징 기능

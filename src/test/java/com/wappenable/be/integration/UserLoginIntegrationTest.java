@@ -3,9 +3,9 @@ package com.wappenable.be.integration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wappenable.be.global.exception.users.InvalidPasswordException;
 import com.wappenable.be.global.exception.users.UserNotFoundException;
+import com.wappenable.be.users.domain.Role;
+import com.wappenable.be.users.domain.User;
 import com.wappenable.be.users.dto.request.LoginRequestDto;
-import com.wappenable.be.users.entity.Role;
-import com.wappenable.be.users.entity.User;
 import com.wappenable.be.users.repository.UserRepository;
 
 import org.junit.jupiter.api.BeforeEach;
