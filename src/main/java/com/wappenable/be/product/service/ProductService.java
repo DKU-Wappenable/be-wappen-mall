@@ -62,6 +62,7 @@ public class ProductService {
        product.setProductImages(productImageEntities); // 새 방식
 
         return productRepository.save(product);
+        
     }
 
     // 상품 수정
@@ -79,8 +80,9 @@ public class ProductService {
         product.setUpdatedAt(LocalDateTime.now());
 
 
-        if (images != null) {
+        if (images != null && images.length > 0 && !images[0].isEmpty()) {
             List<ProductImage> productImageEntities = new ArrayList<>();
+    
             for (MultipartFile file : images) {
                 if (file != null && !file.isEmpty()) {
                     String imageUrl = fileUploader.upload(file); 
@@ -108,6 +110,12 @@ public class ProductService {
             throw new SecurityException("삭제 권한이 없습니다.");
         }
 
+        // ✅ 실제 파일 삭제
+        if (product.getProductImages() != null) {
+            product.getProductImages().forEach(image -> {
+            fileUploader.delete(image.getImages());
+        });
+    }
         productRepository.delete(product);
     }
 

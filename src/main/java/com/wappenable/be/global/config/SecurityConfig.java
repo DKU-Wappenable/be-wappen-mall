@@ -64,7 +64,8 @@ public class SecurityConfig {
                     "/error",
                     "/api/products", // 상품 전체 조회
                     "/api/products/*", // 상품 상세 조회
-                    "/favicon.ico"
+                    "/favicon.ico",
+                    "/uploads/**" // 이미지 URL 경로 공개
                 ).permitAll()
                 
                 // Swagger 관련 경로 허용 (개발 환경에서 API 문서 접근을 위해)
