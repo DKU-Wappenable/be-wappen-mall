@@ -60,7 +60,7 @@ public class SecurityConfig {
                     "/api/users/login",
                     "/api/users/find-id", // 아이디 찾기
                     "/api/users/find-pw", // 비밀번호 찾기(초기화)
-                    "/api/oauth2/**", 
+                    "/oauth2/**", 
                     "/error",
                     "/api/products", // 상품 전체 조회
                     "/api/products/*", // 상품 상세 조회
