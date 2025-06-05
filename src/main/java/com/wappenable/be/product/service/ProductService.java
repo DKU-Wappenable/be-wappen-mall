@@ -22,6 +22,10 @@ import java.io.IOException;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipEntry;
 import java.nio.charset.StandardCharsets;
+import com.wappenable.be.product.dto.ProductResponseDto;
+import com.wappenable.be.custom.domain.CustomizedImage;
+import com.wappenable.be.custom.repository.CustomizedImageRepository;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -30,11 +34,12 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final LocalFileUploader fileUploader; // 개발용
     private final S3Uploader s3Uploader; // 배포용 (현재 미사용)
+    private final CustomizedImageRepository customizedImageRepository;
 
     // ============================== 개발용 ==============================
 
     // 상품 등록
-    public Product createProduct(String name, int price, int stock, MultipartFile[] images, Long sellerId) {
+    public Product createProduct(String name, int price, int stock, String category, String description, MultipartFile[] images, Long sellerId) {
         List<ProductImage> productImageEntities = new ArrayList<>();
 
         Product product = Product.builder()
@@ -42,6 +47,8 @@ public class ProductService {
         .price(price)
         .stock(stock)
         .sellerId(sellerId)
+        .category(category)
+        .description(description)
         .createdAt(LocalDateTime.now())
         .updatedAt(LocalDateTime.now())
         .build();
@@ -62,10 +69,11 @@ public class ProductService {
        product.setProductImages(productImageEntities); // 새 방식
 
         return productRepository.save(product);
+        
     }
 
     // 상품 수정
-    public Product updateProduct(Long id, String name, int price, int stock, MultipartFile[] images, Long sellerId) {
+    public Product updateProduct(Long id, String name, int price, int stock, String category, String description, MultipartFile[] images, Long sellerId) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("상품이 존재하지 않습니다."));
 
@@ -76,11 +84,14 @@ public class ProductService {
         product.setName(name);
         product.setPrice(price);
         product.setStock(stock);
+        product.setCategory(category);
+        product.setDescription(description);
         product.setUpdatedAt(LocalDateTime.now());
 
 
-        if (images != null) {
+        if (images != null && images.length > 0 && !images[0].isEmpty()) {
             List<ProductImage> productImageEntities = new ArrayList<>();
+    
             for (MultipartFile file : images) {
                 if (file != null && !file.isEmpty()) {
                     String imageUrl = fileUploader.upload(file); 
@@ -108,6 +119,12 @@ public class ProductService {
             throw new SecurityException("삭제 권한이 없습니다.");
         }
 
+        // ✅ 실제 파일 삭제
+        if (product.getProductImages() != null) {
+            product.getProductImages().forEach(image -> {
+            fileUploader.delete(image.getImages());
+        });
+    }
         productRepository.delete(product);
     }
 
@@ -205,6 +222,40 @@ public class ProductService {
         }
         return fileMap;
     }
+    public ProductResponseDto publishCustomizedDesign(Long customId, Long userId) {
+        CustomizedImage custom = customizedImageRepository.findById(customId)
+            .orElseThrow(() -> new IllegalArgumentException("디자인을 찾을 수 없습니다."));
+    
+        if (!Objects.equals(custom.getUserId(), userId)) {
+            throw new SecurityException("본인의 디자인만 개시할 수 있습니다.");
+        }
+    
+        // Product 객체 생성
+        Product product = Product.builder()
+            .name(custom.getTitle() != null ? custom.getTitle() : "사용자 디자인")
+            .price(500 + 500 * 1) // 기본 스트랩 + 와펜 1개 (추후 로직화 가능)
+            .stock(1) // 기본 재고 설정 (필요 시 조정)
+            .category("유저디자인")           // ✅ 기본값 설정 권장
+            .description("사용자 커스터마이징 디자인") // ✅ 기본 설명 설정 권장
+            .sellerId(userId) // 사용자 ID를 sellerId로 간주
+            .createdAt(LocalDateTime.now())
+            .updatedAt(LocalDateTime.now())
+            .build();
+    
+        // 대표 이미지 1개를 ProductImage로 감싸기
+        ProductImage image = ProductImage.builder()
+            .images(custom.getCustomizedImageUrl()) // 사용자 디자인 이미지 URL
+            .product(product)
+            .build();
+    
+        product.setProductImages(List.of(image));
+    
+        productRepository.save(product);
+    
+        return ProductResponseDto.from(product);
+    }
+    
+    
 }
     // ============================== 배포용 (현재 주석 처리 상태) ==============================
 
