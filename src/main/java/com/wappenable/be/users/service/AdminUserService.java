@@ -10,6 +10,8 @@ import com.wappenable.be.users.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -29,16 +31,30 @@ public class AdminUserService {
     }
 
     // [ ] : 이건 전체 사용자 조회이지 50명 초기 목록 렌더링이 아님
-    @Transactional(readOnly = true)
-    public List<UserListDto> getAllUsers() {
-        return userRepository.findAll().stream()
-                .map(user -> new UserListDto(
-                        user.getId(),
-                        user.getEmail(),
-                        user.getRecoveryEmail(),
-                        user.getNickname(),
-                        user.getRole()
-                ))
-                .collect(Collectors.toList());
+    // @Transactional(readOnly = true)
+    // public List<UserListDto> getAllUsers() {
+    //     return userRepository.findAll().stream()
+    //             .map(user -> new UserListDto(
+    //                     user.getId(),
+    //                     user.getEmail(),
+    //                     user.getRecoveryEmail(),
+    //                     user.getNickname(),
+    //                     user.getRole()
+    //             ))
+    //             .collect(Collectors.toList());
+    // }
+
+    // NOTE : 50명 렌더링
+    public Page<UserListDto> getUsersPage(Pageable pageable) {
+        return userRepository.findAll(pageable).map(UserListDto::from);
     }
+
+    @Transactional
+    public void deleteUser(Long userId) {
+        if (!userRepository.existsById(userId)) {
+            throw new AdminUserNotFoundException(); // 이미 있는 예외일 거라 가정
+        }
+        userRepository.deleteById(userId);
+    }
+
 }

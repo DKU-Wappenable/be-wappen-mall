@@ -8,6 +8,6 @@ public class AdminUserNotFoundException extends CustomException {
     public static final String MESSAGE = "사용자를 찾을 수 없습니다.";
 
     public AdminUserNotFoundException() {
-        super(MESSAGE, HttpStatus.BAD_REQUEST);
+        super(MESSAGE, HttpStatus.NOT_FOUND);
     }
 }
