@@ -16,6 +16,9 @@ public class ProductResponseDto {
     private String name;
     private int price;
     private int stock;
+    private String category;
+    private String description;
+
     private List<String> imageUrls;
 
     public static ProductResponseDto from(Product product) {
@@ -24,6 +27,8 @@ public class ProductResponseDto {
                 .name(product.getName())
                 .price(product.getPrice())
                 .stock(product.getStock())
+                .category(product.getCategory())
+                .description(product.getDescription())
                 .imageUrls(
                         product.getProductImages().stream()
                                 .map(img -> img.getImages())

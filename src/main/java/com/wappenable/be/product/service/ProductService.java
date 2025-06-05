@@ -235,11 +235,8 @@ public class ProductService {
             .name(custom.getTitle() != null ? custom.getTitle() : "사용자 디자인")
             .price(500 + 500 * 1) // 기본 스트랩 + 와펜 1개 (추후 로직화 가능)
             .stock(1) // 기본 재고 설정 (필요 시 조정)
-<<<<<<< HEAD
             .category("유저디자인")           // ✅ 기본값 설정 권장
             .description("사용자 커스터마이징 디자인") // ✅ 기본 설명 설정 권장
-=======
->>>>>>> ed3f4b75c20ecb078d613c596ab75c57cd9c9a0f
             .sellerId(userId) // 사용자 ID를 sellerId로 간주
             .createdAt(LocalDateTime.now())
             .updatedAt(LocalDateTime.now())

@@ -18,6 +18,10 @@ public class Product {
     private String name;
     private int price;
     private int stock;
+
+    private String category;
+    private String description;
+    
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<ProductImage> productImages; // 커스터마이징용
