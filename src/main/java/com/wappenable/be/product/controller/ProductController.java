@@ -154,5 +154,16 @@ public class ProductController {
         List<Map<String,Object>> result = productService.bulkUpload(csvFile,zipFile,sellerId);
         return ResponseEntity.ok(Map.of("results",result));
      }
+
+     @PostMapping("/publish-custom/{customId}")
+    @PreAuthorize("hasAnyRole('USER','SHOP_OWNER','ADMIN')")
+    public ResponseEntity<ProductResponseDto> publishCustomizedDesign(
+    @PathVariable Long customId,
+    @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+    ProductResponseDto created = productService.publishCustomizedDesign(customId, userDetails.getId());
+    return ResponseEntity.ok(created);
+}
+
     
     }
