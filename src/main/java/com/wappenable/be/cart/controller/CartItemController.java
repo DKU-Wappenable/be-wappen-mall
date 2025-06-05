@@ -23,7 +23,7 @@ public class CartItemController {
     private final CartItemService cartItemService;
 
     @PostMapping
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasAnyRole('USER','SHOP_OWNER','ADMIN')")
     public ResponseEntity<Void> addToCart(
             @RequestBody CartItemRequestDto dto,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
@@ -33,7 +33,7 @@ public class CartItemController {
         return ResponseEntity.ok().build();
     }
     @GetMapping
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasAnyRole('USER','SHOP_OWNER','ADMIN')")
     public ResponseEntity<CartSummaryResponseDto> getCart(@AuthenticationPrincipal CustomUserDetails userDetails) {
         User user = userDetails.getUser();
         CartSummaryResponseDto summary = cartItemService.getCartWithTotal(user);
@@ -41,7 +41,7 @@ public class CartItemController {
     }
     
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasAnyRole('USER','SHOP_OWNER','ADMIN')")
     public ResponseEntity<Void> deleteItem(
             @PathVariable Long id,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
@@ -52,7 +52,7 @@ public class CartItemController {
     }
 
     @PatchMapping("/{cartItemId}")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasAnyRole('USER','SHOP_OWNER','ADMIN')")
     public ResponseEntity<Void> updateCartItemQuantity(
             @PathVariable Long cartItemId,
             @RequestBody CartItemUpdateRequestDto dto,
@@ -64,7 +64,7 @@ public class CartItemController {
     }
      // 결제 (Mock)
      @PostMapping("/checkout")
-     @PreAuthorize("hasRole('USER')")
+     @PreAuthorize("hasAnyRole('USER','SHOP_OWNER','ADMIN')")
      public ResponseEntity<String> checkout(@AuthenticationPrincipal CustomUserDetails userDetails) {
          User user = userDetails.getUser();
          int total = cartItemService.getCartWithTotal(user).getTotalAmount();

@@ -26,19 +26,26 @@ public class CartItemService {
 
     @Transactional
     public void addToCart(CartItemRequestDto dto, User user) {
-        Product product = productRepository.findById(dto.getProductId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 상품입니다."));
-
-        CartItem item = CartItem.builder()
-                .productId(dto.getProductId())
-                .productName(product.getName())
-                .price(product.getPrice())
-                .quantity(dto.getQuantity())
-                .customizationImageUrl(dto.getCustomizationImageUrl())
-                .user(user)
-                .build();
-
-        cartItemRepository.save(item);
+        try {
+            Product product = productRepository.findById(dto.getProductId())
+                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 상품입니다."));
+    
+            CartItem item = CartItem.builder()
+                    .productId(dto.getProductId())
+                    .productName(product.getName())
+                    .price(product.getPrice())
+                    .quantity(dto.getQuantity())
+                    .customizationImageUrl(dto.getCustomizationImageUrl())
+                    .user(user)
+                    .build();
+    
+            cartItemRepository.save(item);
+            System.out.println("[DEBUG] 장바구니 저장 성공");
+    
+        } catch (Exception e) {
+            System.out.println("[ERROR] addToCart 실패: " + e.getMessage());
+            throw e;
+        }
     }
 
     @Transactional
@@ -93,6 +100,7 @@ public class CartItemService {
                         .price(item.getPrice())
                         .quantity(item.getQuantity())
                         .customizationImageUrl(item.getCustomizationImageUrl())
+                        
                         .build())
                 .collect(Collectors.toList());
     

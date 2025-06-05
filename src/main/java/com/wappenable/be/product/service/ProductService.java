@@ -39,7 +39,7 @@ public class ProductService {
     // ============================== 개발용 ==============================
 
     // 상품 등록
-    public Product createProduct(String name, int price, int stock, MultipartFile[] images, Long sellerId) {
+    public Product createProduct(String name, int price, int stock, String category, String description, MultipartFile[] images, Long sellerId) {
         List<ProductImage> productImageEntities = new ArrayList<>();
 
         Product product = Product.builder()
@@ -47,6 +47,8 @@ public class ProductService {
         .price(price)
         .stock(stock)
         .sellerId(sellerId)
+        .category(category)
+        .description(description)
         .createdAt(LocalDateTime.now())
         .updatedAt(LocalDateTime.now())
         .build();
@@ -71,7 +73,7 @@ public class ProductService {
     }
 
     // 상품 수정
-    public Product updateProduct(Long id, String name, int price, int stock, MultipartFile[] images, Long sellerId) {
+    public Product updateProduct(Long id, String name, int price, int stock, String category, String description, MultipartFile[] images, Long sellerId) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("상품이 존재하지 않습니다."));
 
@@ -82,6 +84,8 @@ public class ProductService {
         product.setName(name);
         product.setPrice(price);
         product.setStock(stock);
+        product.setCategory(category);
+        product.setDescription(description);
         product.setUpdatedAt(LocalDateTime.now());
 
 
@@ -231,6 +235,8 @@ public class ProductService {
             .name(custom.getTitle() != null ? custom.getTitle() : "사용자 디자인")
             .price(500 + 500 * 1) // 기본 스트랩 + 와펜 1개 (추후 로직화 가능)
             .stock(1) // 기본 재고 설정 (필요 시 조정)
+            .category("유저디자인")           // ✅ 기본값 설정 권장
+            .description("사용자 커스터마이징 디자인") // ✅ 기본 설명 설정 권장
             .sellerId(userId) // 사용자 ID를 sellerId로 간주
             .createdAt(LocalDateTime.now())
             .updatedAt(LocalDateTime.now())

@@ -12,5 +12,5 @@ public class CartItemResponseDto {
     private int price;
     private int quantity;
     private String customizationImageUrl;
-    
+   
 }
