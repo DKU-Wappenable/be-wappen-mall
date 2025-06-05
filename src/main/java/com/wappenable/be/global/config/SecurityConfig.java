@@ -100,7 +100,7 @@ public class SecurityConfig {
                     "/api/orders", // 주문
                     "/api/orders/*/cancel").hasRole("USER") // 주문 취소 
                 .requestMatchers("/api/orders/user").hasRole("USER") // 소비자용 주문 조회
-                .requestMatchers("/api/orders/list")hasAnyRole("SHOP_OWNER", "ADMIN") // 관리자용 전체 주문 목록 조회
+                .requestMatchers("/api/orders/list").hasAnyRole("SHOP_OWNER", "ADMIN") // 관리자용 전체 주문 목록 조회
                 .requestMatchers("/api/orders/*").hasAnyRole("USER", "SHOP_OWNER", "ADMIN") // 주문 상세 정보 조회
                 .requestMatchers("/api/orders/checkout").hasAnyRole("USER", "SHOP_OWNER", "ADMIN") // 장바구니 주문
                 .requestMatchers("/api/cart/*").hasAnyRole("USER", "SHOP_OWNER", "ADMIN") // 장바구니 추가 및 조회

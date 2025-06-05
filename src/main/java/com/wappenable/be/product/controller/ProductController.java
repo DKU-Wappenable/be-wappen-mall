@@ -86,7 +86,7 @@ public class ProductController {
         @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         Long sellerId = userDetails.getId();
-        Product updated = productService.updateProduct(id,name,price,stock, category, description, images,sellerId);
+        Product updated = productService.updateProduct(id, name, price, stock, category, description, images,sellerId);
         return ResponseEntity.ok(updated);
     }
     
