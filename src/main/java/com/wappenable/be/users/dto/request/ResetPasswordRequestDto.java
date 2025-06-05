@@ -13,7 +13,7 @@ import lombok.Setter;
 public class ResetPasswordRequestDto {
     
     @NotBlank(message = "아이디 입력은 필수입니다.")
-    private String email;
+    private String email;   
 
     @Pattern(
         regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,20}$",
