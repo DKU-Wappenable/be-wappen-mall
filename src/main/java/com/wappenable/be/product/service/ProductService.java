@@ -39,7 +39,7 @@ public class ProductService {
     // ============================== 개발용 ==============================
 
     // 상품 등록
-    public Product createProduct(String name, int price, int stock, MultipartFile[] images, Long sellerId) {
+    public Product createProduct(String name, int price, int stock, String category, String description, MultipartFile[] images, Long sellerId) {
         List<ProductImage> productImageEntities = new ArrayList<>();
 
         Product product = Product.builder()
