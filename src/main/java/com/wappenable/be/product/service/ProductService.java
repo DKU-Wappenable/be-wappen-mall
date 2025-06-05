@@ -22,6 +22,10 @@ import java.io.IOException;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipEntry;
 import java.nio.charset.StandardCharsets;
+import com.wappenable.be.product.dto.ProductResponseDto;
+import com.wappenable.be.custom.domain.CustomizedImage;
+import com.wappenable.be.custom.repository.CustomizedImageRepository;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +34,7 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final LocalFileUploader fileUploader; // 개발용
     private final S3Uploader s3Uploader; // 배포용 (현재 미사용)
+    private final CustomizedImageRepository customizedImageRepository;
 
     // ============================== 개발용 ==============================
 
@@ -213,6 +218,38 @@ public class ProductService {
         }
         return fileMap;
     }
+    public ProductResponseDto publishCustomizedDesign(Long customId, Long userId) {
+        CustomizedImage custom = customizedImageRepository.findById(customId)
+            .orElseThrow(() -> new IllegalArgumentException("디자인을 찾을 수 없습니다."));
+    
+        if (!Objects.equals(custom.getUserId(), userId)) {
+            throw new SecurityException("본인의 디자인만 개시할 수 있습니다.");
+        }
+    
+        // Product 객체 생성
+        Product product = Product.builder()
+            .name(custom.getTitle() != null ? custom.getTitle() : "사용자 디자인")
+            .price(500 + 500 * 1) // 기본 스트랩 + 와펜 1개 (추후 로직화 가능)
+            .stock(1) // 기본 재고 설정 (필요 시 조정)
+            .sellerId(userId) // 사용자 ID를 sellerId로 간주
+            .createdAt(LocalDateTime.now())
+            .updatedAt(LocalDateTime.now())
+            .build();
+    
+        // 대표 이미지 1개를 ProductImage로 감싸기
+        ProductImage image = ProductImage.builder()
+            .images(custom.getCustomizedImageUrl()) // 사용자 디자인 이미지 URL
+            .product(product)
+            .build();
+    
+        product.setProductImages(List.of(image));
+    
+        productRepository.save(product);
+    
+        return ProductResponseDto.from(product);
+    }
+    
+    
 }
     // ============================== 배포용 (현재 주석 처리 상태) ==============================
 

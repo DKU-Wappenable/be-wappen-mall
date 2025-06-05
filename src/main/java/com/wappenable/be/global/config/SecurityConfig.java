@@ -84,9 +84,11 @@ public class SecurityConfig {
                 
                 // 커스터마이징 기능
                 .requestMatchers(
-                    "/api/custom-images", // 상품 이미지 리스트 반환
-                    "/api/custom-images/save" // 커스터마이징 결과 저장
+                "/api/custom-images", // 상품 이미지 리스트 반환
+                "/api/custom-images/save", // 커스터마이징 결과 저장
+                 "/api/products/publish-custom/*" // ← 여기서 경로 변수도 와일드카드로 수정 필요!
                 ).hasAnyRole("USER", "SHOP_OWNER", "ADMIN")
+
 
                 // 상품 등록,수정,삭제,대량등록
                 .requestMatchers(
