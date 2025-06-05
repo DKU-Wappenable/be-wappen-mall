@@ -100,6 +100,7 @@ public class UserController {
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(@AuthenticationPrincipal CustomUserDetails userDetails) {
         return ResponseEntity.ok(Map.of(
+            "id", userDetails.getUser().getId(),
             "email", userDetails.getUser().getEmail(),
             "recoveryEmail", userDetails.getUser().getRecoveryEmail(),
             "nickname", userDetails.getUser().getNickname(),

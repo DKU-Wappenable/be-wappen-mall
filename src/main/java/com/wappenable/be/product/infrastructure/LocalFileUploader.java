@@ -47,4 +47,22 @@ public class LocalFileUploader implements FileUploader {
             throw new RuntimeException("파일 업로드 실패: " + fileName, e);
         }
     }
+
+    @Override
+    public void delete(String fileUrl) {
+        try {
+            String fileName = fileUrl.substring(fileUrl.lastIndexOf("/") + 1);
+            Path filePath = Paths.get(uploadDir, fileName);
+    
+            if (Files.exists(filePath)) {
+                Files.delete(filePath);
+                log.info("파일 삭제 완료: {}", filePath.toString());
+            } else {
+                log.warn("삭제할 파일이 존재하지 않음: {}", filePath.toString());
+            }
+        } catch (Exception e) {
+            log.error("파일 삭제 중 예외 발생: {}", e.getMessage());
+        }
+    }
+    
 }

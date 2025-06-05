@@ -65,7 +65,8 @@ public class SecurityConfig {
                     "/error",
                     "/api/products", // 상품 전체 조회
                     "/api/products/*", // 상품 상세 조회
-                    "/favicon.ico"
+                    "/favicon.ico",
+                    "/uploads/**" // 이미지 URL 경로 공개
                     ).permitAll()
                     .requestMatchers("/api/users/**").hasAnyRole("USER", "SHOP_OWNER", "ADMIN")
                 // Swagger 관련 경로 허용 (개발 환경에서 API 문서 접근을 위해)
@@ -84,9 +85,11 @@ public class SecurityConfig {
                 
                 // 커스터마이징 기능
                 .requestMatchers(
-                    "/api/custom-images", // 상품 이미지 리스트 반환
-                    "/api/custom-images/save" // 커스터마이징 결과 저장
+                "/api/custom-images", // 상품 이미지 리스트 반환
+                "/api/custom-images/save", // 커스터마이징 결과 저장
+                 "/api/products/publish-custom/*" // ← 여기서 경로 변수도 와일드카드로 수정 필요!
                 ).hasAnyRole("USER", "SHOP_OWNER", "ADMIN")
+
 
                 // 상품 등록,수정,삭제,대량등록
                 .requestMatchers(
