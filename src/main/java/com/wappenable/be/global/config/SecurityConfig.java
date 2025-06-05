@@ -60,13 +60,14 @@ public class SecurityConfig {
                     "/api/users/login",
                     "/api/users/find-id", // 아이디 찾기
                     "/api/users/find-pw", // 비밀번호 찾기(초기화)
+                    "/api/users/reset-password", //  종진 요거 추가!!!
                     "/oauth2/**", 
                     "/error",
                     "/api/products", // 상품 전체 조회
                     "/api/products/*", // 상품 상세 조회
                     "/favicon.ico"
-                ).permitAll()
-                
+                    ).permitAll()
+                    .requestMatchers("/api/users/**").hasAnyRole("USER", "SHOP_OWNER", "ADMIN")
                 // Swagger 관련 경로 허용 (개발 환경에서 API 문서 접근을 위해)
                 .requestMatchers(
                     "/swagger-ui/**",           // Swagger UI 리소스

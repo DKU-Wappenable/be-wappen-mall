@@ -9,6 +9,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+// 종진 추가
+import org.springframework.web.bind.annotation.PutMapping;
+import com.wappenable.be.users.dto.request.UpdateUserRequestDto;
 
 // Swagger 애노테이션 추가
 import io.swagger.v3.oas.annotations.Operation;
@@ -34,7 +37,6 @@ import com.wappenable.be.users.service.UserService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/users")
@@ -104,6 +106,15 @@ public class UserController {
             "role", userDetails.getUser().getRole().name()
         ));
     }
+    // 종진 비밀번호 재설정 관련 put 매핑
+    @PutMapping("/me")
+public ResponseEntity<?> updateCurrentUser(
+    @AuthenticationPrincipal CustomUserDetails userDetails,
+    @RequestBody UpdateUserRequestDto request
+) {
+    // TODO: userService.updateUser(userDetails.getUser(), request);
+    return ResponseEntity.ok("수정 완료");
+}
 
     // TODO: 로그아웃 1. 일반 사용자 2. 소셜 계정 사용자(카카오,구글,네이버)
     // public ResponseEntity<?> logout(@AuthenticationPrincipal CustomUserDetails userDetails) {
@@ -162,11 +173,10 @@ public class UserController {
     // 비밀번호 재설정
     @PostMapping("/reset-password")
     @Operation(summary = "비밀번호 재설정", description = "새로운 비밀번호로 변경합니다.")
-    @SecurityRequirement(name = "Bearer Authentication")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "비밀번호 변경 성공"),
         @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터"),
-        @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")
+        @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음")
     })
     public ResponseEntity<?> resetPassword(
         @io.swagger.v3.oas.annotations.parameters.RequestBody(

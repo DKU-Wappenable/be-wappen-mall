@@ -31,7 +31,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     // 로그인, 회원가입 시에는 JWT 예외
     private static final List<String> NO_AUTH_URLS = List.of(
         "/api/users/signup",
-        "/api/users/login"
+        "/api/users/login",
+        "/api/users/find-id",
+        "/api/users/find-pw",
+        "/api/users/reset-password"
     );
 
     private boolean isNoAuthRequired(String uri) {

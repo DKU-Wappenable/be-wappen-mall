@@ -180,16 +180,9 @@ public class UserService {
     }
 
     // 비밀번호 재설정
-    // TODO 이후에 본인 비밀번호도 추가하는 걸로, 필수 기능 먼저 구현하자.
     @Transactional
     public void resetPassword(ResetPasswordRequestDto request) {
-        String currentUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
-
-        if (!currentUserEmail.equals(request.getEmail())) {
-            throw new ResetPasswordNotAllowedException();
-        }
-
-        User user = userRepository.findByEmail(currentUserEmail)
+        User user = userRepository.findByEmail(request.getEmail())
             .orElseThrow(LoginUserNotFoundException::new);
 
         String encodedPassword = passwordEncoder.encode(request.getNewPassword());
