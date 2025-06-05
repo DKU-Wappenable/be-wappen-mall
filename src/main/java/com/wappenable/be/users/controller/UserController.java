@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -86,7 +87,7 @@ public class UserController {
     }
 
     // 약관 동의
-    @PostMapping("/agree-terms")
+    @PutMapping("/agree-terms")
     public ResponseEntity<?> agreeTerms(@RequestBody AgreeTermsRequestDto request) {
         // agreeTermsService.agree(request);
         agreeTermsService.saveAgreement(request);
@@ -161,7 +162,7 @@ public class UserController {
     }
 
     // 비밀번호 재설정
-    @PostMapping("/reset-password")
+    @PutMapping("/reset-password")
     @Operation(summary = "비밀번호 재설정", description = "새로운 비밀번호로 변경합니다.")
     @SecurityRequirement(name = "Bearer Authentication")
     @ApiResponses(value = {

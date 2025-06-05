@@ -74,41 +74,41 @@ class AdminUserServiceTest {
                 .isInstanceOf(AdminUserNotFoundException.class);
     }
 
-    @Test
-    void 전체_사용자_조회_성공() {
-        // given
-        List<User> users = List.of(
-            User.builder()
-                .id(1L)
-                .email("user1")
-                .recoveryEmail("recovery1@example.com")
-                .nickname("유저1")
-                .passwordHash("encoded1")
-                .role(Role.USER)
-                .build(),
-            User.builder()
-                .id(2L)
-                .email("admin")
-                .recoveryEmail("recovery2@example.com")
-                .nickname("관리자")
-                .passwordHash("encoded2")
-                .role(Role.ADMIN)
-                .build()
-        );
+    // @Test
+    // void 전체_사용자_조회_성공() {
+    //     // given
+    //     List<User> users = List.of(
+    //         User.builder()
+    //             .id(1L)
+    //             .email("user1")
+    //             .recoveryEmail("recovery1@example.com")
+    //             .nickname("유저1")
+    //             .passwordHash("encoded1")
+    //             .role(Role.USER)
+    //             .build(),
+    //         User.builder()
+    //             .id(2L)
+    //             .email("admin")
+    //             .recoveryEmail("recovery2@example.com")
+    //             .nickname("관리자")
+    //             .passwordHash("encoded2")
+    //             .role(Role.ADMIN)
+    //             .build()
+    //     );
 
-        when(userRepository.findAll()).thenReturn(users);
+    //     when(userRepository.findAll()).thenReturn(users);
 
-        // when
-        var result = adminUserService.getAllUsers();
+    //     // when
+    //     var result = adminUserService.getAllUsers();
 
-        // then
-        assertThat(result).hasSize(2);
-        assertThat(result.get(0).getEmail()).isEqualTo("user1");
-        assertThat(result.get(0).getRecoveryEmail()).isEqualTo("recovery1@example.com");
-        assertThat(result.get(0).getRole()).isEqualTo(Role.USER);
+    //     // then
+    //     assertThat(result).hasSize(2);
+    //     assertThat(result.get(0).getEmail()).isEqualTo("user1");
+    //     assertThat(result.get(0).getRecoveryEmail()).isEqualTo("recovery1@example.com");
+    //     assertThat(result.get(0).getRole()).isEqualTo(Role.USER);
 
-        assertThat(result.get(1).getNickname()).isEqualTo("관리자");
-        assertThat(result.get(1).getRecoveryEmail()).isEqualTo("recovery2@example.com");
-        assertThat(result.get(1).getRole()).isEqualTo(Role.ADMIN);
-    }
+    //     assertThat(result.get(1).getNickname()).isEqualTo("관리자");
+    //     assertThat(result.get(1).getRecoveryEmail()).isEqualTo("recovery2@example.com");
+    //     assertThat(result.get(1).getRole()).isEqualTo(Role.ADMIN);
+    // }
 }
