@@ -33,7 +33,7 @@ public class CartItemController {
         return ResponseEntity.ok().build();
     }
     @GetMapping
-    @@PreAuthorize("hasAnyRole('USER','SHOP_OWNER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','SHOP_OWNER','ADMIN')")
     public ResponseEntity<CartSummaryResponseDto> getCart(@AuthenticationPrincipal CustomUserDetails userDetails) {
         User user = userDetails.getUser();
         CartSummaryResponseDto summary = cartItemService.getCartWithTotal(user);

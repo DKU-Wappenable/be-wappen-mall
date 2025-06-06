@@ -50,15 +50,13 @@ public class ProductController {
             @Parameter(description = "상품명", required = true) @RequestParam String name,
             @Parameter(description = "상품 가격", required = true) @RequestParam int price,
             @Parameter(description = "재고 수량", required = true) @RequestParam int stock,
-            @Parameter(description = "카테고리", required = true) @RequestParam String category,
-            @Parameter(description = "상품 설명", required = true) @RequestParam String description,
             @Parameter(description = "상품 이미지 파일들", required = true) @RequestParam("images") MultipartFile[] images,
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         System.out.println("name: " + name + ", price: " + price + ", stock: " + stock);
 
-        Long sellerId = userDetails.getId() ; // 로그인 된 사용자 Id    
-        Product saved = productService.createProduct(name, price, stock,category, description, images, sellerId);
+        Long sellerId = userDetails.getId() ; // 로그인 된 사용자 Id
+        Product saved = productService.createProduct(name, price, stock, images, sellerId);
         return ResponseEntity.ok(saved);
     }
 
@@ -80,13 +78,11 @@ public class ProductController {
         @Parameter(description = "상품명", required = true) @RequestParam String name,
         @Parameter(description = "상품 가격", required = true) @RequestParam int price,
         @Parameter(description = "재고 수량", required = true) @RequestParam int stock,
-        @Parameter(description = "카테고리", required = true) @RequestParam String category,
-        @Parameter(description = "상품 설명", required = true) @RequestParam String description,
         @Parameter(description = "상품 이미지 파일들 (선택사항)") @RequestParam(value = "images", required = false) MultipartFile[] images,
         @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         Long sellerId = userDetails.getId();
-        Product updated = productService.updateProduct(id,name,price,stock, category, description, images,sellerId);
+        Product updated = productService.updateProduct(id,name,price,stock,images,sellerId);
         return ResponseEntity.ok(updated);
     }
     
