@@ -52,19 +52,21 @@ public class SecurityConfig {
                     "/",
                     "/api/users/signup",
                     "/api/users/login",
-                    "/api/users/find-id", // 아이디 찾기
-                    "/api/users/find-pw", // 비밀번호 찾기(초기화)
-                    "/api/users/reset-password", // 비밀번호 재설정
-                    "/oauth2/**", 
+                    "/api/users/find-id",
+                    "/api/users/find-pw",
+                    "/api/users/reset-password",
+                    "/api/users/agree-terms",
+                    "/oauth2/**",
                     "/error",
                     "/api/products",
                     "/api/products/*",
                     "/favicon.ico",
                     "/uploads/**"
+                    
                 ).permitAll()
 
-                .requestMatchers("/api/users/**").hasAnyRole("USER", "SHOP_OWNER", "ADMIN")
-
+                .requestMatchers("/api/orders/list").hasAnyRole("SHOP_OWNER", "ADMIN")
+                
                 .requestMatchers(
                     "/swagger-ui/**",
                     "/swagger-ui.html",
@@ -89,20 +91,16 @@ public class SecurityConfig {
                     "/api/products/bulk"
                 ).hasAnyRole("SHOP_OWNER", "ADMIN")
 
-                .requestMatchers(
-                    "/api/orders", // 주문
-                    "/api/orders/*/cancel").hasRole("USER") // 주문 취소 
-                .requestMatchers("/api/orders/user").hasRole("USER") // 소비자용 주문 조회
-                .requestMatchers("/api/orders/list")hasAnyRole("SHOP_OWNER", "ADMIN") // 관리자용 전체 주문 목록 조회
-                .requestMatchers("/api/orders/*").hasAnyRole("USER", "SHOP_OWNER", "ADMIN") // 주문 상세 정보 조회
-                .requestMatchers("/api/orders/checkout").hasAnyRole("USER", "SHOP_OWNER", "ADMIN") // 장바구니 주문
-                .requestMatchers("/api/cart/*").hasAnyRole("USER", "SHOP_OWNER", "ADMIN") // 장바구니 추가 및 조회
-                .requestMatchers("/api/cart/id").hasAnyRole("USER", "SHOP_OWNER", "ADMIN") // 장바구니 물품 삭제
-                .requestMatchers("/api/cart/cartItemId").hasAnyRole("USER", "SHOP_OWNER", "ADMIN") // 장바구니 물품 수령 수정
-                .requestMatchers("/api/cart/checkout").hasAnyRole("USER", "SHOP_OWNER", "ADMIN") // 장바구니 결제
+                .requestMatchers("/api/orders", "/api/orders/*/cancel").hasRole("USER")
+                .requestMatchers("/api/orders/user").hasRole("USER")
+                .requestMatchers("/api/orders/*").hasAnyRole("USER", "SHOP_OWNER", "ADMIN")
+                .requestMatchers("/api/orders/checkout").hasAnyRole("USER", "SHOP_OWNER", "ADMIN")
 
+                .requestMatchers("/api/cart/*").hasAnyRole("USER", "SHOP_OWNER", "ADMIN")
+                .requestMatchers("/api/cart/id").hasAnyRole("USER", "SHOP_OWNER", "ADMIN")
+                .requestMatchers("/api/cart/cartItemId").hasAnyRole("USER", "SHOP_OWNER", "ADMIN")
+                .requestMatchers("/api/cart/checkout").hasAnyRole("USER", "SHOP_OWNER", "ADMIN")
 
-                // 주문 상태 변경,삭제 관련
                 .requestMatchers(
                     "/api/orders/*/confirm-deposit",
                     "/api/orders/*"

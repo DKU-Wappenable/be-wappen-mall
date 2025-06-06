@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-
+import com.wappenable.be.terms.repository.UserTermsAgreementRepository;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 public class AdminUserService {
 
     private final UserRepository userRepository;
-
+    private final UserTermsAgreementRepository userTermsAgreementRepository;
     @Transactional
     public void updateUserRole(Long userId, Role newRole) {
         User user = userRepository.findById(userId)
@@ -46,7 +46,11 @@ public class AdminUserService {
 
     // NOTE : 50명 렌더링
     public Page<UserListDto> getUsersPage(Pageable pageable) {
-        return userRepository.findAll(pageable).map(UserListDto::from);
+        return userRepository.findAll(pageable)
+            .map(user -> {
+                boolean agreed = userTermsAgreementRepository.existsByUserAndFirstIsTrueAndCheckedIsTrue(user);
+                return UserListDto.from(user, agreed);
+            });
     }
 
     @Transactional

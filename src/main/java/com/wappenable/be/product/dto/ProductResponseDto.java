@@ -1,4 +1,5 @@
 package com.wappenable.be.product.dto;
+import com.wappenable.be.product.domain.ProductImage;
 
 import com.wappenable.be.product.domain.Product;
 import lombok.*;
@@ -18,6 +19,7 @@ public class ProductResponseDto {
     private int stock;
     private String category;
     private String description;
+    private int likeCount; //종진 추가 좋아요 수 카운트.
 
     private List<String> imageUrls;
 
@@ -34,6 +36,22 @@ public class ProductResponseDto {
                                 .map(img -> img.getImages())
                                 .collect(Collectors.toList())
                 )
+                .likeCount(product.getLikes() != null ? product.getLikes().size() : 0) // 종진 추가
                 .build();
     }
+    public static ProductResponseDto from(Product product, int likeCount) {
+        return ProductResponseDto.builder()
+                .id(product.getId())
+                .name(product.getName())
+                .price(product.getPrice())
+                .stock(product.getStock())
+                .category(product.getCategory())
+                .description(product.getDescription())
+                .imageUrls(product.getProductImages().stream()
+                        .map(ProductImage::getImages)
+                        .toList())
+                .likeCount(likeCount)
+                .build();
+    }
+    
 }
