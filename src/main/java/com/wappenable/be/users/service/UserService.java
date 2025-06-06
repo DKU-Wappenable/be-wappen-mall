@@ -22,6 +22,7 @@ import com.wappenable.be.global.exception.users.InvalidPasswordException;
 import com.wappenable.be.global.exception.users.PasswordMismatchException;
 import com.wappenable.be.global.exception.users.RecoveryEmailNotFoundException;
 import com.wappenable.be.global.exception.users.ResetPasswordNotAllowedException;
+import com.wappenable.be.global.exception.users.SamePasswordException;
 import com.wappenable.be.global.exception.users.UnauthorizedAccessException;
 import com.wappenable.be.global.exception.users.LoginUserNotFoundException;
 import com.wappenable.be.global.exception.users.UserRecoveryMismatchException;
@@ -184,6 +185,11 @@ public class UserService {
     public void resetPassword(ResetPasswordRequestDto request) {
         User user = userRepository.findByEmail(request.getEmail())
             .orElseThrow(LoginUserNotFoundException::new);
+
+        // 현재 비밀번호와 동일한지 확인
+        if (passwordEncoder.matches(request.getNewPassword(), user.getPasswordHash())) {
+            throw new SamePasswordException();
+        }
 
         String encodedPassword = passwordEncoder.encode(request.getNewPassword());
         user.setPasswordHash(encodedPassword);
