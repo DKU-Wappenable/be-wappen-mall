@@ -10,7 +10,12 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
+// 종진 추가
+import org.springframework.web.bind.annotation.PutMapping;
+import com.wappenable.be.users.dto.request.UpdateUserRequestDto;
+import com.wappenable.be.terms.repository.UserTermsAgreementRepository;
+import com.wappenable.be.users.dto.response.UserListDto; // 🔧 추가
+import com.wappenable.be.users.domain.User;
 // Swagger 애노테이션 추가
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -35,7 +40,6 @@ import com.wappenable.be.users.service.UserService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/users")
@@ -44,6 +48,7 @@ public class UserController {
 
     private final UserService userService;
     private final AgreeTermsService agreeTermsService;
+    private final UserTermsAgreementRepository userTermsAgreementRepository;
 
     // 회원가입
     @PostMapping("/signup")
@@ -86,33 +91,32 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-    // 약관 동의
-    @PutMapping("/agree-terms")
-    public ResponseEntity<?> agreeTerms(@RequestBody AgreeTermsRequestDto request) {
-        // agreeTermsService.agree(request);
-        agreeTermsService.saveAgreement(request);
-        return ResponseEntity.ok("약관 동의 완료");
-    }
-
     // 내 정보 조회
     // TODO : 내 정보 조회 시 어떤 값을 프론트에서 보여주는지 일치시키기
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        return ResponseEntity.ok(Map.of(
-            "id", userDetails.getUser().getId(),
-            "email", userDetails.getUser().getEmail(),
-            "recoveryEmail", userDetails.getUser().getRecoveryEmail(),
-            "nickname", userDetails.getUser().getNickname(),
-            "role", userDetails.getUser().getRole().name()
-        ));
-    }
+    User user = userDetails.getUser();
+    boolean agreed = userTermsAgreementRepository.existsByUserAndFirstIsTrueAndCheckedIsTrue(user);
+    return ResponseEntity.ok(UserListDto.from(user, agreed));
+}
+
+
+    // 종진 비밀번호 재설정 관련 put 매핑
+    @PutMapping("/me")
+    public ResponseEntity<?> updateCurrentUser(
+    @AuthenticationPrincipal CustomUserDetails userDetails,
+    @RequestBody UpdateUserRequestDto request
+) {
+    // TODO: userService.updateUser(userDetails.getUser(), request);
+    return ResponseEntity.ok("수정 완료");
+}
 
     // TODO: 로그아웃 1. 일반 사용자 2. 소셜 계정 사용자(카카오,구글,네이버)
     // public ResponseEntity<?> logout(@AuthenticationPrincipal CustomUserDetails userDetails) {
     //     LogoutResponse response = userService.logout(userDetails.getUser());
     //     return ResponseEntity.ok(response);
     // }
-    
+
 
     // 회원탈퇴
     @PostMapping("/withdraw")
@@ -160,15 +164,24 @@ public class UserController {
         String tempPassword = userService.resetPasswordWithTempPassword(request);
         return ResponseEntity.ok(tempPassword);
     }
+    // 약관동의 
+    @PutMapping("/agree-terms")
+    public ResponseEntity<?> agreeTerms(
+        @AuthenticationPrincipal CustomUserDetails userDetails,
+        @RequestBody AgreeTermsRequestDto request
+    ) {
+        User user = userDetails.getUser();
+        agreeTermsService.saveAgreement(user, request);
+        return ResponseEntity.ok("약관 동의 완료");
+    }
 
     // 비밀번호 재설정
     @PutMapping("/reset-password")
     @Operation(summary = "비밀번호 재설정", description = "새로운 비밀번호로 변경합니다.")
-    @SecurityRequirement(name = "Bearer Authentication")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "비밀번호 변경 성공"),
         @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터"),
-        @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")
+        @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음")
     })
     public ResponseEntity<?> resetPassword(
         @io.swagger.v3.oas.annotations.parameters.RequestBody(

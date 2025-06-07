@@ -4,9 +4,10 @@ import com.wappenable.be.custom.domain.CustomizedImage;
 import com.wappenable.be.custom.dto.CustomizedImageRequest;
 import com.wappenable.be.custom.dto.CustomizedImageResponse;
 import com.wappenable.be.custom.repository.CustomizedImageRepository;
-import com.wappenable.be.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 
 import java.io.IOException;
 import java.nio.file.*;
@@ -21,7 +22,6 @@ import java.util.stream.Collectors;
 public class CustomImageService {
 
     private final CustomizedImageRepository customizedImageRepository;
-    private final ProductRepository productRepository;
 
     /**
      * 모든 커스터마이징 이미지 조회
@@ -34,7 +34,6 @@ public class CustomImageService {
                         .title(img.getTitle())
                         .userId(img.getUserId())
                         .createdAt(img.getCreatedAt())
-                        .originalProductId(img.getOriginalProductId())
                         .build())
                 .collect(Collectors.toList());
     }
@@ -43,21 +42,12 @@ public class CustomImageService {
      * 커스터마이징 이미지 저장 (Base64 → 파일 저장 + DB 저장)
      */
     public CustomizedImageResponse saveCustomizedImage(CustomizedImageRequest request, Long userId) {
-        // optional: 상품 유효성 확인
-        if (request.getOriginalProductId() != null) {
-            productRepository.findById(request.getOriginalProductId())
-                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 상품입니다. ID: " + request.getOriginalProductId()));
-        }
-
-        // Base64 → 실제 이미지 파일 저장
         String imagePath = saveBase64ImageToFile(request.getCustomizedImageUrl());
 
-        // DB 저장
         CustomizedImage saved = customizedImageRepository.save(
                 CustomizedImage.builder()
-                        .customizedImageUrl(imagePath) // ex) /uploads/custom/uuid.png
+                        .customizedImageUrl(imagePath)
                         .title(request.getTitle())
-                        .originalProductId(request.getOriginalProductId())
                         .userId(userId)
                         .createdAt(LocalDateTime.now())
                         .build()
@@ -67,14 +57,13 @@ public class CustomImageService {
                 .id(saved.getId())
                 .customizedImageUrl(saved.getCustomizedImageUrl())
                 .title(saved.getTitle())
-                .originalProductId(saved.getOriginalProductId())
                 .userId(saved.getUserId())
                 .createdAt(saved.getCreatedAt())
                 .build();
     }
 
     /**
-     * Base64 이미지를 uploads/custom 폴더에 저장하고, 해당 파일 경로 반환
+     * Base64 이미지를 파일로 저장
      */
     private String saveBase64ImageToFile(String base64Data) {
         try {
@@ -83,7 +72,7 @@ public class CustomImageService {
             }
 
             String[] parts = base64Data.split(",");
-            String metadata = parts[0]; // data:image/png;base64
+            String metadata = parts[0];
             String base64Image = parts[1];
             String extension = metadata.contains("png") ? ".png" : ".jpg";
 
@@ -98,9 +87,20 @@ public class CustomImageService {
             Path filePath = uploadPath.resolve(fileName);
             Files.write(filePath, imageBytes);
 
-            return "/uploads/custom/" + fileName; // 웹에서 접근 가능한 상대 경로
+            return "/uploads/custom/" + fileName;
         } catch (IOException e) {
             throw new RuntimeException("이미지 파일 저장 실패", e);
         }
+    }
+
+    public void deleteImage(Long id, Long userId) {
+        CustomizedImage image = customizedImageRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "이미지를 찾을 수 없습니다."));
+
+        if (!image.getUserId().equals(userId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "삭제 권한이 없습니다.");
+        }
+
+        customizedImageRepository.delete(image);
     }
 }

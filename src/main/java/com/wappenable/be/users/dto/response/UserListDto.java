@@ -16,14 +16,16 @@ public class UserListDto {
     private String recoveryEmail;
     private String nickname;
     private Role role;
+    private boolean termsAccepted;
 
-    public static UserListDto from(User user) {
+    public static UserListDto from(User user, boolean termsAccepted) {
         return new UserListDto(
             user.getId(),
             user.getEmail(),
             user.getRecoveryEmail(),
             user.getNickname(),
-            user.getRole()
+            user.getRole(),
+            termsAccepted
         );
     }
 }

@@ -10,6 +10,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AgreeTermsRequestDto {
+    private boolean terms;
+    private boolean privacy;
+    private boolean financial;
+    private boolean marketing;
+    
     // private List<AgreeItem> agreements;
 
     // @Getter
@@ -19,9 +24,4 @@ public class AgreeTermsRequestDto {
     //     private Long termsId;
     //     private boolean agreed; // → 향후 일부 동의/비동의 구조에도 대응 가능
     // }
-
-    private boolean terms;
-    private boolean privacy;
-    private boolean financial;
-    private boolean marketing;
 }

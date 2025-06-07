@@ -24,9 +24,6 @@ public class CustomizedImage {
     @Column(nullable = true)
     private String title;
 
-    @Column(name = "original_product_id", nullable = false)
-    private Long originalProductId;
-    
     @Column(name = "user_id", nullable = false)
     private Long userId;
 

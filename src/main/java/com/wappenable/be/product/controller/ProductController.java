@@ -34,6 +34,16 @@ public class ProductController {
 
     private final ProductService productService;
 
+
+    // 종진 좋아요 수 계산 상품
+    @GetMapping("/products-with-likes") // ✅ 추가된 API
+    public ResponseEntity<List<ProductResponseDto>> getAllProductsWithLikeCounts() {
+        return ResponseEntity.ok(productService.getAllProductsWithLikes());
+    }
+
+
+
+
     // ============================== 개발용 ==============================
     @PostMapping // 상품 등록 api
     @PreAuthorize("hasAnyRole('SHOP_OWNER', 'ADMIN')") 
@@ -50,15 +60,15 @@ public class ProductController {
             @Parameter(description = "상품명", required = true) @RequestParam String name,
             @Parameter(description = "상품 가격", required = true) @RequestParam int price,
             @Parameter(description = "재고 수량", required = true) @RequestParam int stock,
-            @Parameter(description = "카테고리", required = true) @RequestParam String category,
-            @Parameter(description = "상품 설명", required = true) @RequestParam String description,
+            @RequestParam String category,       // 추가!
+            @RequestParam String description,
             @Parameter(description = "상품 이미지 파일들", required = true) @RequestParam("images") MultipartFile[] images,
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         System.out.println("name: " + name + ", price: " + price + ", stock: " + stock);
 
-        Long sellerId = userDetails.getId() ; // 로그인 된 사용자 Id    
-        Product saved = productService.createProduct(name, price, stock,category, description, images, sellerId);
+        Long sellerId = userDetails.getId() ; // 로그인 된 사용자 Id
+        Product saved = productService.createProduct(name, price, stock, category, description, images, sellerId);
         return ResponseEntity.ok(saved);
     }
 
@@ -80,8 +90,8 @@ public class ProductController {
         @Parameter(description = "상품명", required = true) @RequestParam String name,
         @Parameter(description = "상품 가격", required = true) @RequestParam int price,
         @Parameter(description = "재고 수량", required = true) @RequestParam int stock,
-        @Parameter(description = "카테고리", required = true) @RequestParam String category,
-        @Parameter(description = "상품 설명", required = true) @RequestParam String description,
+        @RequestParam String category,       // 추가!
+        @RequestParam String description,
         @Parameter(description = "상품 이미지 파일들 (선택사항)") @RequestParam(value = "images", required = false) MultipartFile[] images,
         @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
@@ -167,7 +177,12 @@ public class ProductController {
 
     ProductResponseDto created = productService.publishCustomizedDesign(customId, userDetails.getId());
     return ResponseEntity.ok(created);
-}
+    }
 
+    // 종진 추가(좋아요)
+    @GetMapping("/all")
+    public List<ProductResponseDto> getAll() {
+        return productService.getAllProductsWithLikes();
+    }
     
     }
