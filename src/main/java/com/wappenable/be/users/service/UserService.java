@@ -86,19 +86,48 @@ public class UserService {
     @Transactional
     public void deleteCurrentUser(DeleteUserRequestDto request) {
         String currentEmail = SecurityContextHolder.getContext().getAuthentication().getName();
-
+        
         if (!currentEmail.equals(request.getEmail())) {
             throw new UnauthorizedAccessException();
         }
-
+        
         User user = userRepository.findByEmail(currentEmail)
                 .orElseThrow(CurrentUserNotFoundException::new);
-
-        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
-            throw new InvalidPasswordException();
+        
+        // 소셜 로그인 사용자 체크 (socialAccounts가 존재하는지 확인)
+        boolean isSocialUser = !user.getSocialAccounts().isEmpty();
+        
+        if (isSocialUser) {
+            // 소셜 로그인 사용자는 비밀번호 검증 없이 탈퇴 처리
+            log.info("소셜 로그인 사용자 탈퇴 처리: {} (연동된 계정: {}개)", 
+                    currentEmail, user.getSocialAccounts().size());
+            
+            // 어떤 소셜 계정들이 삭제되는지 로깅
+            user.getSocialAccounts().forEach(socialAccount ->
+                log.info("  - {} 계정 삭제: {}", socialAccount.getProvider(), socialAccount.getProviderUserId())
+            );
+        } else {
+            // 일반 사용자는 비밀번호 검증 필요
+            if (user.getPasswordHash() == null || user.getPasswordHash().isEmpty()) {
+                throw new InvalidPasswordException();
+            }
+            
+            if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+                throw new InvalidPasswordException();
+            }
+            
+            log.info("일반 사용자 탈퇴 처리: {}", currentEmail);
         }
-
+        
+        // 약관 동의 기록이 있다면 로깅
+        if (user.getTermsAgreements() != null && !user.getTermsAgreements().isEmpty()) {
+            log.info("사용자 {}의 약관 동의 기록 {}개도 함께 삭제", currentEmail, user.getTermsAgreements().size());
+        }
+        
+        // User 삭제 시 cascade로 SocialAccount들도 자동 삭제
         userRepository.delete(user);
+        
+        log.info("사용자 탈퇴 완료: {}", currentEmail);
     }
 
     public String findEmailByRecoveryEmail(String recoveryEmail) {

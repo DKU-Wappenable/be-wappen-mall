@@ -9,6 +9,7 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.stereotype.Component;
 
 import com.wappenable.be.global.security.jwt.JwtUtil;
+import com.wappenable.be.terms.repository.UserTermsAgreementRepository;
 import com.wappenable.be.users.domain.User;
 import com.wappenable.be.users.repository.UserRepository;
 
@@ -17,6 +18,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 @Component
 @RequiredArgsConstructor
@@ -25,6 +28,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
+    private final UserTermsAgreementRepository userTermsAgreementRepository;
     
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
@@ -54,7 +58,15 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         String refreshToken = jwtUtil.generateRefreshToken(email, user.getRole().name());
 
         // TODO 프론트와 리다이렉트 주소 맞는지 확인 필요
-        String redirectUrl = "http://localhost:5173/oauth/success?accessToken=" + accessToken + "&refreshToken=" + refreshToken;
+        boolean agreed = userTermsAgreementRepository
+            .existsByUserAndFirstIsTrueAndCheckedIsTrue(user);
+
+        String redirectUrl = "http://localhost:5173/oauth/success" +
+            "?accessToken=" + URLEncoder.encode(accessToken, StandardCharsets.UTF_8) +
+            "&refreshToken=" + URLEncoder.encode(refreshToken, StandardCharsets.UTF_8) +
+            "&agreed=" + agreed;
+
+        log.debug("✅ Redirecting to frontend with tokens and agreed: {}", redirectUrl);
         response.sendRedirect(redirectUrl);
     }
 }

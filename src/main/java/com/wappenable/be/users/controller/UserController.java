@@ -92,7 +92,6 @@ public class UserController {
     }
 
     // 내 정보 조회
-    // TODO : 내 정보 조회 시 어떤 값을 프론트에서 보여주는지 일치시키기
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(@AuthenticationPrincipal CustomUserDetails userDetails) {
     User user = userDetails.getUser();
@@ -102,14 +101,14 @@ public class UserController {
 
 
     // 종진 비밀번호 재설정 관련 put 매핑
-    @PutMapping("/me")
-    public ResponseEntity<?> updateCurrentUser(
-    @AuthenticationPrincipal CustomUserDetails userDetails,
-    @RequestBody UpdateUserRequestDto request
-) {
-    // TODO: userService.updateUser(userDetails.getUser(), request);
-    return ResponseEntity.ok("수정 완료");
-}
+    // @PutMapping("/me")
+    // public ResponseEntity<?> updateCurrentUser(
+    // @AuthenticationPrincipal CustomUserDetails userDetails,
+    // @RequestBody UpdateUserRequestDto request
+    // ) {
+    //     userService.updateUser(userDetails.getUser(), request);
+    //     return ResponseEntity.ok(UserListDto.from(updatedUser, true)); // 실제 업데이트된 사용자 정보 반환
+    // }
 
     // TODO: 로그아웃 1. 일반 사용자 2. 소셜 계정 사용자(카카오,구글,네이버)
     // public ResponseEntity<?> logout(@AuthenticationPrincipal CustomUserDetails userDetails) {

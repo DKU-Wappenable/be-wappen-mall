@@ -4,6 +4,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -55,7 +56,6 @@ public class SecurityConfig {
                     "/api/users/find-id",
                     "/api/users/find-pw",
                     "/api/users/reset-password",
-                    "/api/users/agree-terms",
                     "/oauth2/**",
                     "/error",
                     "/api/products",
@@ -75,9 +75,11 @@ public class SecurityConfig {
                     "/swagger-resources/**",
                     "/webjars/**"
                 ).permitAll()
-
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // ✅ preflight 허용
+                
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .requestMatchers("/api/users/me").hasAnyRole("USER", "SHOP_OWNER", "ADMIN")
+                .requestMatchers("/api/users/agree-terms").hasAnyRole("USER", "SHOP_OWNER", "ADMIN")
 
                 .requestMatchers(
                     "/api/custom-images",
