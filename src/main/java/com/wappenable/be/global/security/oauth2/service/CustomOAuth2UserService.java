@@ -23,6 +23,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -93,12 +95,25 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             socialAccountRepository.save(socialAccount);
         }
 
+
+        // attributes에 이메일이 없는 경우 (카카오) 수정된 attributes 생성
+        Map<String, Object> modifiedAttributes = new HashMap<>(userInfo.getAttributes());
+        if (!modifiedAttributes.containsKey("email") || modifiedAttributes.get("email") == null) {
+            modifiedAttributes.put("email", finalEmail);
+        }
+
         return new DefaultOAuth2User(
                 Collections.singleton(user.getRole().toGrantedAuthority()),
-                userInfo.getAttributes(),
+                modifiedAttributes, // 수정된 attributes 사용
                 "email"
-                // userNameAttributeName
         );
+
+        // return new DefaultOAuth2User(
+        //         Collections.singleton(user.getRole().toGrantedAuthority()),
+        //         userInfo.getAttributes(),
+        //         "email"
+        //         // userNameAttributeName
+        // );
 
         // TODO: 소셜 로그인 연결 해제, 재가입 흐름
     }

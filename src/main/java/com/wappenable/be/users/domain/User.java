@@ -12,6 +12,8 @@ import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import com.wappenable.be.terms.domain.UserTermsAgreement;
+
 @Entity
 @Table(name = "users")
 @Getter
@@ -64,7 +66,12 @@ public class User {
 
     // user 하나에 여러개의 socialAccounts 존재 가능, user 삭제 시 모든 연동 계정 삭제
     @Builder.Default
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL) 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true) 
     private List<SocialAccount> socialAccounts = new ArrayList<>();
+
+    // user 삭제 시 약관 동의 기록도 함께 삭제
+    @Builder.Default
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UserTermsAgreement> termsAgreements = new ArrayList<>();
 
 }
