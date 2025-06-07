@@ -3,6 +3,8 @@ package com.wappenable.be.users.domain;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+
 public enum Role {
     USER, SHOP_OWNER, ADMIN;
 
@@ -13,5 +15,10 @@ public enum Role {
      */
     public GrantedAuthority toGrantedAuthority() {
         return new SimpleGrantedAuthority("ROLE_" + this.name());
+    }
+
+    @JsonCreator
+    public static Role from(String value) {
+        return Role.valueOf(value.toUpperCase()); // "admin" → "ADMIN"
     }
 }

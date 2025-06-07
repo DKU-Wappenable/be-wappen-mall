@@ -1,6 +1,7 @@
 package com.wappenable.be.users.dto.response;
 
 import com.wappenable.be.users.domain.Role;
+import com.wappenable.be.users.domain.User;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,4 +16,16 @@ public class UserListDto {
     private String recoveryEmail;
     private String nickname;
     private Role role;
+    private boolean termsAccepted;
+
+    public static UserListDto from(User user, boolean termsAccepted) {
+        return new UserListDto(
+            user.getId(),
+            user.getEmail(),
+            user.getRecoveryEmail(),
+            user.getNickname(),
+            user.getRole(),
+            termsAccepted
+        );
+    }
 }
