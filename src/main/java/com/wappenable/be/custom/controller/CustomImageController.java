@@ -42,4 +42,16 @@ public class CustomImageController {
         CustomizedImageResponse resp = customImageService.saveCustomizedImage(request, userId);
         return ResponseEntity.ok(resp);
     }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('USER','SHOP_OWNER','ADMIN')")
+    public ResponseEntity<Void> deleteCustomizedImage(
+        @PathVariable Long id,
+        @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+    customImageService.deleteImage(id, userDetails.getId());
+    return ResponseEntity.noContent().build(); // 204
+}
+
+
 }

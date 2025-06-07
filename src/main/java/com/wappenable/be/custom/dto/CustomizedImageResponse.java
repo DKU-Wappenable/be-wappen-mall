@@ -11,7 +11,6 @@ public class CustomizedImageResponse {
     private Long id;
     private String customizedImageUrl;
     private String title;
-    private Long originalProductId;
     private Long userId;
     private LocalDateTime createdAt;
 }
