@@ -15,6 +15,8 @@ import com.wappenable.be.product.domain.Product;
 import com.wappenable.be.product.repository.ProductRepository;
 import com.wappenable.be.users.domain.User;
 import com.wappenable.be.users.repository.UserRepository;
+import com.wappenable.be.terms.repository.UserTermsAgreementRepository;
+import com.wappenable.be.global.exception.users.RequiredTermsNotAgreedException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,9 +40,21 @@ public class OrderService {
     private final PaymentService paymentService;
     private final CartItemRepository cartItemRepository;
     private final UserRepository userRepository; // ★ 필드 추가: UserRepository 주입
+    private final UserTermsAgreementRepository userTermsAgreementRepository;
 
     @Transactional
     public void processOrder(OrderRequest request, Long buyerId) {
+        // 1. 약관 동의 검증
+        User user = userRepository.findById(buyerId)
+                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
+        
+        boolean hasValidTermsAgreement = userTermsAgreementRepository
+                .existsByUserAndFirstIsTrueAndCheckedIsTrue(user);
+        
+        if (!hasValidTermsAgreement) {
+            throw new RequiredTermsNotAgreedException();
+        }
+
         String status = request.getPaymentMethod().equalsIgnoreCase("BANK")
                 ? "WAITING_FOR_DEPOSIT"
                 : "PAID";
