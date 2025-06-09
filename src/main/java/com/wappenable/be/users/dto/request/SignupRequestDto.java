@@ -27,7 +27,10 @@ public class SignupRequestDto {
     private String recoveryEmail;
     
     @NotBlank(message = "닉네임 입력은 필수입니다.")
-    @Pattern(regexp = "^[A-Za-z0-9]{2,10}$", message = "닉네임은 영어 또는 숫자만 포함한 2~10자여야 합니다.") // 공백 방어
+    @Pattern(
+        regexp = "^(?!.*\\s)[A-Za-z0-9가-힣]{2,10}$",
+        message = "닉네임은 영어, 숫자 또는 한글로 이루어진 2~10자여야 합니다."
+    )
     private String nickname;
 
     @NotBlank(message = "비밀번호 입력은 필수입니다.")

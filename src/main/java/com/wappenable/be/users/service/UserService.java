@@ -80,7 +80,13 @@ public class UserService {
         User user = userDetails.getUser();
         boolean agreed = userTermsAgreementRepository.existsByUserAndFirstIsTrueAndCheckedIsTrue(user);
 
-        return ResponseEntity.ok(UserListDto.from(user, agreed)); // ✅ UserListDto 사용
+        return ResponseEntity.ok(UserListDto.from(user, agreed)); 
+    }
+
+    @Transactional
+    public User updateUser(User currentUser, UpdateUserRequestDto request) {
+        currentUser.setNickname(request.getNickname());
+        return userRepository.save(currentUser);
     }
 
     @Transactional
