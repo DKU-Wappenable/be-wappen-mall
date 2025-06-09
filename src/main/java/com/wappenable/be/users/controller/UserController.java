@@ -93,22 +93,34 @@ public class UserController {
 
     // 내 정보 조회
     @GetMapping("/me")
+    @Operation(summary = "내 정보 조회", description = "로그인한 사용자의 정보를 조회합니다.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "사용자 정보 조회 성공"),
+        @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")
+    })
     public ResponseEntity<?> getCurrentUser(@AuthenticationPrincipal CustomUserDetails userDetails) {
-    User user = userDetails.getUser();
-    boolean agreed = userTermsAgreementRepository.existsByUserAndFirstIsTrueAndCheckedIsTrue(user);
-    return ResponseEntity.ok(UserListDto.from(user, agreed));
-}
+        User user = userDetails.getUser();
+        boolean agreed = userTermsAgreementRepository.existsByUserAndFirstIsTrueAndCheckedIsTrue(user);
+        return ResponseEntity.ok(UserListDto.from(user, agreed));
+    }
 
 
     // 종진 비밀번호 재설정 관련 put 매핑
-    // @PutMapping("/me")
-    // public ResponseEntity<?> updateCurrentUser(
-    // @AuthenticationPrincipal CustomUserDetails userDetails,
-    // @RequestBody UpdateUserRequestDto request
-    // ) {
-    //     userService.updateUser(userDetails.getUser(), request);
-    //     return ResponseEntity.ok(UserListDto.from(updatedUser, true)); // 실제 업데이트된 사용자 정보 반환
-    // }
+    @PutMapping("/me")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "회원 정보 수정 성공"),
+        @ApiResponse(responseCode = "400", description = "잘못된 닉네임 형식"),
+        @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")
+    })
+    public ResponseEntity<?> updateCurrentUser(
+        @AuthenticationPrincipal CustomUserDetails userDetails,
+        @Valid @RequestBody UpdateUserRequestDto request
+    ) {
+        User updatedUser = userService.updateUser(userDetails.getUser(), request);
+        boolean agreed = userTermsAgreementRepository.existsByUserAndFirstIsTrueAndCheckedIsTrue(updatedUser);
+        return ResponseEntity.ok(UserListDto.from(updatedUser, agreed));
+    }
+
 
     // TODO: 로그아웃 1. 일반 사용자 2. 소셜 계정 사용자(카카오,구글,네이버)
     // public ResponseEntity<?> logout(@AuthenticationPrincipal CustomUserDetails userDetails) {
@@ -119,6 +131,11 @@ public class UserController {
 
     // 회원탈퇴
     @PostMapping("/withdraw")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "회원탈퇴 성공"),
+        @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터"),
+        @ApiResponse(responseCode = "403", description = "접근 권한 없음")
+    })
     public ResponseEntity<?> deleteUser(@RequestBody @Valid DeleteUserRequestDto request) {
         userService.deleteCurrentUser(request);
         return ResponseEntity.ok("회원 탈퇴 완료");
@@ -165,6 +182,11 @@ public class UserController {
     }
     // 약관동의 
     @PutMapping("/agree-terms")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "약관 동의 완료"),
+        @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터"),
+        @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")
+    })
     public ResponseEntity<?> agreeTerms(
         @AuthenticationPrincipal CustomUserDetails userDetails,
         @RequestBody AgreeTermsRequestDto request
@@ -175,7 +197,7 @@ public class UserController {
     }
 
     // 비밀번호 재설정
-    @PutMapping("/reset-password")
+    @PostMapping("/reset-password")
     @Operation(summary = "비밀번호 재설정", description = "새로운 비밀번호로 변경합니다.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "비밀번호 변경 성공"),
